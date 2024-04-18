@@ -19,9 +19,7 @@ from django.urls import path, include
 
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns 
 
-from api import views  # Import views from the api app
-
-
+#from api import views  # Import views from the api app
 #from pages.views import home  # Import the home view
 urlpatterns = [
     path('admin/', admin.site.urls),

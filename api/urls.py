@@ -2,7 +2,7 @@ from django.contrib import admin   #..
 from django.urls import path
 from . import views
 
-from rest_framework.urlpatterns import format_suffix_patterns
+#from rest_framework.urlpatterns import format_suffix_patterns
 
 #from .views import MyModelListCreate
 
@@ -23,4 +23,4 @@ urlpatterns = [
 
 ]
 
-urlpatterns = format_suffix_patterns(urlpatterns)
+#urlpatterns = format_suffix_patterns(urlpatterns)
