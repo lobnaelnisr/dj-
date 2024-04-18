@@ -17,16 +17,20 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
-from pages import views  # Import views from the pages app
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns 
+
+from api import views  # Import views from the api app
 
 
 #from pages.views import home  # Import the home view
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('pages.urls')),
-    
-    path('', views.home, name='home'),  # Assuming home is a view defined in views.py of the pages app
+    path('api/', include('api.urls')),
+    #path('', views.home, name='home'),  # Assuming home is a view defined in views.py of the api app
+    #path('api-auth/', include('rest_framework.urls'))
 
 ]
+
+urlpatterns += staticfiles_urlpatterns()   #
 
 

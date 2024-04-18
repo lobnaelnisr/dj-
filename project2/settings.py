@@ -9,8 +9,7 @@ https://docs.djangoproject.com/en/5.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
-import os
-
+import os   # Import dj-database-url at the beginning of the file.
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -36,23 +35,39 @@ ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "*").split(" ")
 # Application definition
 
 INSTALLED_APPS = [
-    'pages.apps.PagesConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'api.apps.ApiConfig',
+    'rest_framework',
+
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware', # add this line to enable CORS headers
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware', #
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+    
+    
+
+]
+
+
+CORS_ORIGIN_ALLOW_ALL = True  # If you want to allow all origins
+# OR
+CORS_ORIGIN_WHITELIST = [
+    'http://localhost:5173',  # Replace with the actual origin of your React app
 ]
 
 ROOT_URLCONF = 'project2.urls'
@@ -60,7 +75,8 @@ ROOT_URLCONF = 'project2.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [ os.path.join( BASE_DIR , 'templates')],
+        #'DIRS': [ os.path.join( BASE_DIR , 'templates')],
+        'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -87,8 +103,19 @@ DATABASES = {
         'NAME': 'mgdb',
         'ENFORCE_SCHEMA': False,
 
+        'CLIENT': {
+
+            'host':'mongodb+srv://lobnaelnisr:1234lolo@cluster0.9evcfxw.mongodb.net/',
+
+            'port': 27017,
+
+            'username': 'lobnaelnisr',
+
+            'password': '1234lolo',
+
         }
     }
+}
 
 #database_url = os.environ.get("DATABASE_URL")
 
@@ -121,6 +148,8 @@ TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
+USE_L10N = True #
+
 USE_TZ = True
 
 
@@ -129,7 +158,21 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')  #.
+MEDIA_URL = "/media/"          #.
+
+# This production code might break development mode, so we check whether we're in DEBUG mode
+if not DEBUG:
+    # Tell Django to copy static assets into a path called `staticfiles` (this is specific to Render)
+    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+    # Enable the WhiteNoise storage backend, which compresses static files to reduce disk use
+    # and renames the files with unique names for each version to support long-term caching
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
