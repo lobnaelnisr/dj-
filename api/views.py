@@ -1,15 +1,12 @@
 from django.shortcuts import render
-#from django.http import HttpResponse
-from django.http import JsonResponse
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .serializers import MyModelSerializer
-
 from .models import MyModel
+#from django.http import HttpResponse
+#from django.http import JsonResponse
 #from pymongo import MongoClient
 #from rest_framework import generics
-
-
 
 
 # Create your views here.
@@ -17,14 +14,15 @@ from .models import MyModel
 @api_view(['GET'])
 def apiOverview(request):
 	api_urls = {
-		'List':'/mymodel-list/',
-		'Detail View':'/mymodel-detail/<str:pk>/',
-		'Create':'/mymodel-create/',
-		'Update':'/mymodel-update/<str:pk>/',
-		'Delete':'/mymodel-delete/<str:pk>/',
-		}
+		   'List':'/mymodel-list/',
+		   'Detail View':'/mymodel-detail/<str:pk>/',
+		   'Create':'/mymodel-create/',
+		   'Update':'/mymodel-update/<str:pk>/',
+		   'Delete':'/mymodel-delete/<str:pk>/',
+		   }
 
 	return Response(api_urls)
+# create views for displaying users
 
 @api_view(['GET'])
 def mymodelList(request):

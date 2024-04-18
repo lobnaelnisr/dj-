@@ -26,7 +26,6 @@ urlpatterns = [
     path('api/', include('api.urls')),
     #path('', views.home, name='home'),  # Assuming home is a view defined in views.py of the api app
     #path('api-auth/', include('rest_framework.urls'))
-
 ]
 
 urlpatterns += staticfiles_urlpatterns()   #
