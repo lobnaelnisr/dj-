@@ -2,7 +2,7 @@ from django.contrib import admin   #..
 from django.urls import path
 from . import views
 
-from rest_framework.urlpatterns import format_suffix_patterns
+#from rest_framework.urlpatterns import format_suffix_patterns
 
 #from .views import MyModelListCreate
 
@@ -14,7 +14,7 @@ urlpatterns = [
     path('mymodel-detail/<str:pk>/', views.mymodelDetail, name="mymodel-detail"),
     path('mymodel-create/', views.mymodelCreate, name="mymodel-create"),
     path('mymodel-update/<str:pk>/', views.mymodelUpdate, name="mymodel-update"),
-	path('mymodel-delete/<str:pk>/', views.mymodelDelete, name="mymodel-delete"),
+    path('mymodel-delete/<str:pk>/', views.mymodelDelete, name="mymodel-delete"),
 
     #path('' , views.index , name= 'index') ,
     #path('about' , views.about , name= 'about') ,
@@ -23,4 +23,4 @@ urlpatterns = [
 
 ]
 
-urlpatterns = format_suffix_patterns(urlpatterns)
+#urlpatterns = format_suffix_patterns(urlpatterns)
