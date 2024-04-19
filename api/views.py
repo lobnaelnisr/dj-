@@ -1,75 +1,59 @@
 from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from .serializers import MyModelSerializer
-from .models import MyModel
+from .serializers import studentSerializers
+from .models import student_data
 #from django.http import HttpResponse
 #from django.http import JsonResponse
 #from pymongo import MongoClient
 #from rest_framework import generics
 
-
-# Create your views here.
-
+# API Overview View
 @api_view(['GET'])
-def apiOverview(request):
-	api_urls = {
-		   'List':'/mymodel-list/',
-		   'Detail View':'/mymodel-detail/<str:pk>/',
-		   'Create':'/mymodel-create/',
-		   'Update':'/mymodel-update/<str:pk>/',
-		   'Delete':'/mymodel-delete/<str:pk>/',
-		   }
+def api_overview(request):
+    #Provides an overview of the available API endpoints.
+    api_urls = {
+        'Get All Students and create': '/students/',
+        'detail delete update student': '/students/<id>/',
+    }
+    return Response(api_urls)
 
-	return Response(api_urls)
-# create views for displaying users
+# CRUD Views for Students
+@api_view(['GET', 'POST'])
+def students_list(request):
+    #List all students or create a new student.
+    if request.method == 'GET':
+        students = student_data.objects.all()
+        serializer = studentSerializers(students, many=True)
+        return Response(serializer.data)
+    elif request.method == 'POST':
+        serializer = studentSerializers(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)
 
-@api_view(['GET'])
-def mymodelList(request):
-	mymodels = MyModel.objects.all().order_by('-id')
-	serializer = MyModelSerializer(mymodels, many=True)
-	return Response(serializer.data)
+@api_view(['GET', 'PUT', 'DELETE'])
+def student_detail(request, id):
+    #Retrieve, update or delete a student instance.
+    try:
+        student = student_data.objects.get(pk=id)
+    except student_data.DoesNotExist:
+        return Response({'error': 'Student not found'}, status=404)
 
-@api_view(['GET'])
-def mymodelDetail(request, pk):
-	mymodels = MyModel.objects.get(id=pk)
-	serializer = MyModelSerializer(mymodels, many=False)
-	return Response(serializer.data)
+    if request.method == 'GET':
+        serializer = studentSerializers(student)
+        return Response(serializer.data)
+    elif request.method == 'PUT':
+        serializer = studentSerializers(student, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=400)
+    elif request.method == 'DELETE':
+        student.delete()
+        return Response({'message': 'Student deleted successfully'}, status=204)
 
-@api_view(['POST'])
-def mymodelCreate(request):
-	serializer = MyModelSerializer(data=request.data)
-
-	if serializer.is_valid():
-		serializer.save()
-
-	return Response(serializer.data)
-
-@api_view(['POST'])
-def mymodelUpdate(request, pk):
-	mymodel = MyModel.objects.get(id=pk)
-	serializer = MyModelSerializer(instance=mymodel, data=request.data)
-
-	if serializer.is_valid():
-		serializer.save()
-
-	return Response(serializer.data)
-
-@api_view(['DELETE'])
-def mymodelDelete(request, pk):
-	mymodel = MyModel.objects.get(id=pk)
-	mymodel.delete()
-
-	return Response('Item succsesfully delete!')
-
-#def index(request):
-    #return render(request , 'api/index.html' , {'name':'ahmed'})
-
-#def about(request):
-    #pass
-
-#def home(request):
-    #return HttpResponse("Welcome to the homepage!")
 
 #class MyModelListCreate(generics.ListCreateAPIView):
     #queryset = MyModel.objects.all()
