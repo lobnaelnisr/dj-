@@ -1,11 +1,10 @@
 # serializers.py
 
 from rest_framework import serializers
-from .models import student_data
+from .models import morph_data
 
-class studentSerializers(serializers.ModelSerializer):
+class morphSerializers(serializers.ModelSerializer):
     class Meta:
-        model = student_data
+        model = morph_data
         #fields = '__all__'
-        fields = ['id', 'username', 'email'] 
-        
+        fields = ['id','username', 'arousal', 'attention','valence', 'volume', 'dominantEmotion' ,'time', 'date']
