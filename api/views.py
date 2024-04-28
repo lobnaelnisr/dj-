@@ -1,12 +1,10 @@
-#from django.shortcuts import render
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from rest_framework import status
-from django.http import JsonResponse
 from rest_framework import viewsets # type: ignore
+from rest_framework.response import Response # type: ignore
 from .models import SessionData
 from .serializers import SessionDataSerializer
 from django.http import JsonResponse
+from rest_framework import status
+from rest_framework.decorators import api_view
 #from pymongo import MongoClient
 #from rest_framework import generics
 
@@ -36,7 +34,13 @@ def api_overview(request):
     api_urls = {
         'To show all data': '/view',
         'To add new data ': '/add',
-        'the format is ': 'SessionStartedAt=  ,arousal=   ,attention=  ,dominantEmotion= , volume=  ,dominantEmotion=  , feature_1=  , feature_2=  ,feature_3=  ,feature_4=  ,feature_5=  , userName=  , valence=  , volume=  ',
+        'morph data format ': '{"SessionStartedAt":" 0"  ,"arousal":" 0"   ,"attention":" 0"  ,"dominantEmotion": " txt" , "volume":" 0"  ,"dominantEmotion": " txt"  , "feature_1":" txt" , "feature_2":" txt ","feature_3":"  txt","feature_4":"  txt","feature_5":"  txt", "userName":"  txt", "valence":" 0 ", "volume":" 0 "}',
+        'to login to your account ': 'login/',
+        'login format':'{ "username": "test", "password": "0000" }',
+        'to sign-up for the first time ': 'signup/',
+        'signup format':'{ "username": "test", "password": "0000" , "email": "test@email.co" }',
+        'to test token validity ': 'test_token/',
+        
     }
     return Response(api_urls)
 #class MyModelListCreate(generics.ListCreateAPIView):

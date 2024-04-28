@@ -37,6 +37,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'api.apps.ApiConfig',
+
+    'authapi.apps.AuthapiConfig',
+    'rest_framework.authtoken',
+
     'rest_framework',
 
     'corsheaders',
@@ -90,30 +94,16 @@ WSGI_APPLICATION = 'project2.wsgi.application'
 
 DATABASES = {
     'default': {
-        #'ENGINE': 'django.db.backends.sqlite3',
-        #'ENGINE': 'djongo',
+
         'ENGINE': 'django.db.backends.mysql',
-        #'NAME': BASE_DIR / 'db.sqlite3',
-        #'NAME': 'mgdb',
+
         'NAME': 'morphcast',
-        'ENFORCE_SCHEMA': False,
-
-        'CLIENT': {
-
-            #'host':'mongodb+srv://lobnaelnisr:1234lolo@cluster0.9evcfxw.mongodb.net/',
-            'host': '4.157.125.46',
-
-            #'port': 27017,
-            'port': '3307' ,
-
-            #'username': 'lobnaelnisr',
-            'username': 'lobna',
-
-            #'password': '1234lolo',
-            'password': '6101973',
-
-        }
+        'USER': 'lobna',
+        'PASSWORD': '6101973',
+        'HOST': '4.157.125.46',
+        'PORT': '3306',
     }
+
 }
 
 #database_url = os.environ.get("DATABASE_URL")
