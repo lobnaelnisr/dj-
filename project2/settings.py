@@ -55,6 +55,7 @@ MIDDLEWARE = [
 
 ]
 
+REST_FRAMEWORK = {'DEFAULT_PERMISSION_CLASSES':['rest_framework.permissions.AllowAny']}
 
 CORS_ORIGIN_ALLOW_ALL = True  # If you want to allow all origins
 # OR
@@ -90,20 +91,26 @@ WSGI_APPLICATION = 'project2.wsgi.application'
 DATABASES = {
     'default': {
         #'ENGINE': 'django.db.backends.sqlite3',
-        'ENGINE': 'djongo',
+        #'ENGINE': 'djongo',
+        'ENGINE': 'django.db.backends.mysql',
         #'NAME': BASE_DIR / 'db.sqlite3',
-        'NAME': 'mgdb',
+        #'NAME': 'mgdb',
+        'NAME': 'morphcast',
         'ENFORCE_SCHEMA': False,
 
         'CLIENT': {
 
-            'host':'mongodb+srv://lobnaelnisr:1234lolo@cluster0.9evcfxw.mongodb.net/',
+            #'host':'mongodb+srv://lobnaelnisr:1234lolo@cluster0.9evcfxw.mongodb.net/',
+            'host': '4.157.125.46',
 
-            'port': 27017,
+            #'port': 27017,
+            'port': '3307' ,
 
-            'username': 'lobnaelnisr',
+            #'username': 'lobnaelnisr',
+            'username': 'lobna',
 
-            'password': '1234lolo',
+            #'password': '1234lolo',
+            'password': '6101973',
 
         }
     }

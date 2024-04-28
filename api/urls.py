@@ -1,17 +1,19 @@
 #from django.contrib import admin   
 from django.urls import path, re_path
-from .views import api_overview            #, students_list, student_detail
-from . import views
+from rest_framework.routers import DefaultRouter # type: ignore
+from .views import create, list, api_overview
+#from .views import api_overview            #, students_list, student_detail
+#from . import views
 #from .views import MyModelListCreate
 
-urlpatterns = [
 
+# Define a router for the SessionDataViewSet
+urlpatterns = [
+    
     # API Overview
     path('', api_overview, name='api_overview'),
-
-    re_path('add/', views.saveUserData),
-    re_path('view/', views.showUsersData),
-    re_path('edit/<int:id>', views.edit_info),
+    re_path('add/', create),
+    re_path('view/', list),
     #path('api/data/', MyModelListCreate.as_view(), name='my_model-list-create'),
     
 ]

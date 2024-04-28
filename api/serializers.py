@@ -1,10 +1,10 @@
 # serializers.py
 
-from rest_framework import serializers
-from .models import morph_data
+from rest_framework import serializers # type: ignore
+from .models import SessionData
 
-class morphSerializers(serializers.ModelSerializer):
+class SessionDataSerializer(serializers.ModelSerializer):
     class Meta:
-        model = morph_data
-        #fields = '__all__'
-        fields = ['id','username', 'arousal', 'attention','valence', 'volume', 'dominantEmotion' ,'time', 'date']
+        model = SessionData
+        fields = '__all__'
+        
