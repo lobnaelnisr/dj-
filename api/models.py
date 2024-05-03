@@ -2,7 +2,7 @@ from django.db import models
 
 # Create your models here.
 class SessionData(models.Model):
-    SessionStartedAt = models.TimeField(null= True, blank= True)
+    session_started_at = models.CharField(max_length=8, null=True, blank=True)
     #SessionStartedAt = models.TimeField(auto_now= True, blank=True)
     arousal = models.IntegerField()
     attention = models.IntegerField()
