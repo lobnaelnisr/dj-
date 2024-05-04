@@ -14,7 +14,7 @@ class SessionData(models.Model):
     feature_4 = models.CharField(max_length=50)
     feature_5 = models.CharField(max_length=50)
     gender = models.CharField(max_length=10)
-    userName = models.CharField(max_length=100)
+    userEmail = models.CharField(max_length=100)
     valence = models.FloatField()
     volume = models.FloatField()
     #SessionEndedAt = models.CharField(max_length=12, null=True, blank=True)
