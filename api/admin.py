@@ -10,5 +10,5 @@ from .models import SessionData
 
 @admin.register(SessionData)
 class SessionDataAdmin(admin.ModelAdmin):
-    list_display = ['userName', 'SessionStartedAt', 'arousal', 'attention', 'dominantEmotion', 'gender', 'valence', 'volume']
+    list_display = ['userName','SessionStartedAt', 'arousal', 'attention', 'dominantEmotion', 'gender', 'valence', 'volume']
     search_fields = ['userName']
