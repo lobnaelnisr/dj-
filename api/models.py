@@ -2,9 +2,9 @@ from django.db import models
 
 # Create your models here.
 class SessionData(models.Model):
+    CaptureTime = models.TimeField(auto_now= True, blank=True)
     SessionEndedAt = models.CharField(max_length=12, null=True, blank=True)
     SessionStartedAt = models.CharField(max_length=12, null=True, blank=True)
-    #SessionStartedAt = models.TimeField(auto_now= True, blank=True)
     arousal = models.IntegerField()
     attention = models.IntegerField()
     dominantEmotion = models.CharField(max_length=50)

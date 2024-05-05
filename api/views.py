@@ -34,7 +34,7 @@ def api_overview(request):
     api_urls = {
         'To show all data': '/view',
         'To add new data ': '/add',
-        'morph data format ': '{"SessionStartedAt":" 0"  ,"arousal":" 0"   ,"attention":" 0"  ,"dominantEmotion": " txt" , "volume":" 0" , "SessionEndedAt":" 0"}',
+        'morph data format ': '{"SessionStartedAt":" 0" ,"arousal":" 0"   ,"attention":" 0"  ,"dominantEmotion": " txt" , "volume":" 0" , "SessionEndedAt":" 0"}',
         'to login to your account ': 'login/',
         'login format':'{ "username": "test", "password": "0000" }',
         'to sign-up for the first time ': 'signup/',
