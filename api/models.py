@@ -20,27 +20,5 @@ class SessionData(models.Model):
     volume = models.FloatField()
     #SessionEndedAt = models.CharField(max_length=12, null=True, blank=True)
     def __str__(self):
-        return self.userName
-#def create_student(request, name, email):
-    #student = student_data(name=name, email=email)
-    #student.save()
-    #return student
+        return self.userEmail
 
-
-#def get_students():
-    #return student_data.objects.all()
-
-
-#def delete_student(id):
-    #student = student_data.objects.get(pk=id)
-    #student.delete()
-    #return student
-
-
-#def update_student(id, name, email):
-    #student = student_data.objects.get(pk=id)
-    #student.name = name
-    #student.email = email
-    #student.save()
-    #return student
-    
