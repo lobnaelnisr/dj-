@@ -96,7 +96,7 @@ WSGI_APPLICATION = 'project2.wsgi.application'
 #        'NAME':'db.sqlite3',
 #    }
 #}
-
+#
 
 DATABASES = {
     'default': {

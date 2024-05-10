@@ -6,3 +6,9 @@ class UserSerializers(serializers.ModelSerializer):
     class Meta(object):
         model = User
         fields = ['id','username', 'email','password']
+        
+
+class UserListSerializers(serializers.ModelSerializer):
+    class Meta(object):
+        model = User
+        fields = ['id', 'username', 'email']          

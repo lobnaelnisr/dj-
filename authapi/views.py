@@ -1,10 +1,10 @@
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication
-from .serializers import UserSerializers
+from .serializers import UserSerializers , UserListSerializers
 from rest_framework.response import Response
 from django.contrib.auth.models import User
-from rest_framework import status
+from rest_framework import status, generics
 from rest_framework.authtoken.models import Token
 from django.shortcuts import get_object_or_404
 
@@ -40,3 +40,8 @@ def test_token(request):
     return Response("passed for {}".format(request.user.email))   #request is passed for the email of user whose token was just provided 
 
 
+# retrieve users:
+
+class UserListView(generics.ListAPIView):
+    queryset = User.objects.all()
+    serializer_class =UserListSerializers
