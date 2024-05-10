@@ -40,6 +40,7 @@ def api_overview(request):
         'to sign-up for the first time ': 'signup/',
         'signup format':'{ "username": "test", "password": "0000" , "email": "test@email.co" }',
         'to test token validity ': 'test_token/',
+        'to show all users': 'users/',
         
     }
     return Response(api_urls)

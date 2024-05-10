@@ -7,7 +7,7 @@ Content-Type: application/json
 POST http://127.0.0.1:8000/signup/
 Content-Type: application/json
 
-{"username":"kokii", "email": "kok@email.co", "password": "ll665066" }
+{"username":"testuser", "email": "testuser@email.co", "password": "ll665066" }
 ####
 
 GET http://127.0.0.1:8000/test_token
@@ -15,3 +15,7 @@ Content-Type: application/json
 Authorization: Token 5b4edd9f26087d0cc32e7bf79d2b2c1c73e3fb30
 
 {}
+
+######
+GET http://127.0.0.1:8000/users/
+Content-Type: application/json
