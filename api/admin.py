@@ -6,3 +6,4 @@ class SessionDataAdmin(admin.ModelAdmin):
     list_display = ['userEmail', 'CaptureTime', 'SessionStartedAt','Session_for', 'arousal', 'attention', 'dominantEmotion', 'gender', 'valence', 'volume','SessionEndedAt']
     search_fields = ['userName']
     
+#hey u
