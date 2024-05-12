@@ -1,6 +1,6 @@
 from django.db import models
 
-# Create your models here.
+
 class SessionData(models.Model):
     #CaptureTime = models.TimeField(auto_now= True, blank=True)
     CaptureTime = models.CharField(max_length=12, null=True, blank=True)
@@ -19,7 +19,7 @@ class SessionData(models.Model):
     userEmail = models.CharField(max_length=100)
     valence = models.FloatField()
     volume = models.FloatField()
-    #SessionEndedAt = models.CharField(max_length=12, null=True, blank=True)
+    
     def __str__(self):
         return self.userEmail
 
