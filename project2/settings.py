@@ -92,7 +92,7 @@ WSGI_APPLICATION = 'project2.wsgi.application'
 DATABASES = {
     'default': {
 
-        'ENGINE': 'mysql.connector.django',
+        'ENGINE': 'django.db.backends.mysql',
 
         'NAME': 'morphcast',
         'USER': 'lobna',
