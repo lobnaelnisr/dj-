@@ -3,6 +3,6 @@ from .models import SessionData
 
 @admin.register(SessionData)
 class SessionDataAdmin(admin.ModelAdmin):
-    list_display = ['userEmail', 'CaptureTime', 'SessionStartedAt', 'arousal', 'attention', 'dominantEmotion', 'gender', 'valence', 'volume','SessionEndedAt']
+    list_display = ['userEmail', 'CaptureTime', 'SessionStartedAt','Session_for', 'arousal', 'attention', 'dominantEmotion', 'gender', 'valence', 'volume','SessionEndedAt']
     search_fields = ['userName']
     
