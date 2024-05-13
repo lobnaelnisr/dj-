@@ -54,8 +54,8 @@ class UserListView(generics.ListAPIView):
 
 def external_link_view(request):
   # Redirect user to the login website
-  external_url = 'https://insightlearn.vercel.app/login'
-  return redirect(external_url)
+    external_url = 'https://insightlearn.vercel.app/login'
+    return redirect(external_url)
 
 class MyPasswordResetCompleteView(PasswordResetCompleteView):
     def get_context_data(self, **kwargs):
@@ -64,6 +64,7 @@ class MyPasswordResetCompleteView(PasswordResetCompleteView):
         return context
 
     def render_to_response(self, context):
-        external_link = reverse('external-link-url')  # Use reverse function for named URL
+        external_link = reverse('external-link-url')
         response = HttpResponseRedirect(external_link)
         return response
+
