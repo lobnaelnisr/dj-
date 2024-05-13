@@ -19,3 +19,7 @@ Authorization: Token 5b4edd9f26087d0cc32e7bf79d2b2c1c73e3fb30
 #######
 GET http://127.0.0.1:8000/users/
 Content-Type: application/json
+##################
+
+GET http://127.0.0.1:8000/accounts/reset/done/
+Content-Type: application/json

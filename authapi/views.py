@@ -7,6 +7,8 @@ from django.contrib.auth.models import User
 from rest_framework import status, generics
 from rest_framework.authtoken.models import Token
 from django.shortcuts import get_object_or_404
+from django.contrib.auth.views import PasswordResetCompleteView
+from django.http import JsonResponse
 
 
 @api_view(['POST'])
@@ -45,3 +47,15 @@ def test_token(request):
 class UserListView(generics.ListAPIView):
     queryset = User.objects.all()
     serializer_class =UserListSerializers
+
+#forget password 
+
+class MyPasswordResetCompleteView(PasswordResetCompleteView):
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['message'] = "Your password reset was successful!"
+        return context
+
+    def render_to_response(self, context):
+        return JsonResponse(context['message'],safe=False)
+    

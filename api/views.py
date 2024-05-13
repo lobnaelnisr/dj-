@@ -24,7 +24,7 @@ def list( request):
     if request.method == 'GET':
         queryset = SessionData.objects.all()
         serializer = SessionDataSerializer(queryset, many=True)
-        return JsonResponse({'Users Data ': serializer.data}, safe= False)
+        return JsonResponse({'users-data':serializer.data}, safe= False)
 
 @api_view(['GET'])
 def api_overview(request):
@@ -41,6 +41,7 @@ def api_overview(request):
         'signup format':'{ "username": "test", "password": "0000" , "email": "test@email.co" }',
         'to test token validity ': 'test_token/',
         'to show all users': 'users/',
+        'to reset your password':'reset_password/',
         
     }
     return Response(api_urls)
