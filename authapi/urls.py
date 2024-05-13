@@ -1,6 +1,6 @@
 from django.urls import re_path, path
 from . import views
-from .views import UserListView, MyPasswordResetCompleteView,external_link_view
+from .views import UserListView, MyPasswordResetCompleteView,external_link_view,change_password
 from django.contrib.auth import views as auth_views    #
 
 
@@ -10,6 +10,7 @@ urlpatterns = [
     re_path('login/', views.login),
     re_path('signup/', views.signup),
     re_path('test_token/', views.test_token),
+    path('change_password/', change_password, name='change_password'),
     re_path('users/', UserListView.as_view(), name='user-list'),
     #to add users manually
     re_path('add_user/', views.addUser),     

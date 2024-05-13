@@ -1,7 +1,7 @@
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication
-from .serializers import UserSerializers , UserListSerializers
+from .serializers import UserSerializers , UserListSerializers,UserPasswordSerializers
 from rest_framework.response import Response
 from django.contrib.auth.models import User
 from rest_framework import status, generics
@@ -35,6 +35,21 @@ def signup(request):
         return Response({"token": token.key, "user": serializer.data})
     return Response(serializer.errors, status= status.HTTP_400_BAD_REQUEST)
 
+#change password 
+@api_view(['POST'])
+def change_password(request):
+    user = get_object_or_404(User, email = request.data['email'])
+    if not user.check_password(request.data['password']):
+        return Response({"details": "Invalid credentials"}, status = status.HTTP_401_UNAUTHORIZED)
+
+    if 'new_password' not in request.data:
+        return Response({"details": "New password is required"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    serializer = UserPasswordSerializers(instance=user)
+    user.set_password(request.data['new_password'])
+    user.save()
+    token, created = Token.objects.get_or_create(user=user)
+    return Response({"token": token.key, "user": serializer.data})
 
 # add user manually :
 
