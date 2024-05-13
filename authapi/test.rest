@@ -15,11 +15,15 @@ Content-Type: application/json
 Authorization: Token 5b4edd9f26087d0cc32e7bf79d2b2c1c73e3fb30
 
 {}
+#######
+POST http://127.0.0.1:8000/add_user/
+Content-Type: application/json
 
+{"username":"ahmed", "email": "ahmed@gmail.com", "password": "ll665066" }
 #######
 GET http://127.0.0.1:8000/users/
 Content-Type: application/json
-##################
+#################
 
 GET http://127.0.0.1:8000/accounts/reset/done/
 Content-Type: application/json

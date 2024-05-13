@@ -11,7 +11,8 @@ urlpatterns = [
     re_path('signup/', views.signup),
     re_path('test_token/', views.test_token),
     re_path('users/', UserListView.as_view(), name='user-list'),
-
+    #to add users manually
+    re_path('add_user/', views.addUser),     
     path('external-link/', external_link_view, name='external-link-url'),
     # forget password :
     path('reset_password/', auth_views.PasswordResetView.as_view(), name="reset_password"),

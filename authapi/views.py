@@ -36,6 +36,23 @@ def signup(request):
     return Response(serializer.errors, status= status.HTTP_400_BAD_REQUEST)
 
 
+# add user manually :
+
+@api_view(['POST'])
+def addUser(request):
+    serializer = UserSerializers(data = request.data)
+    if serializer.is_valid():
+        serializer.save()
+        user = User.objects.get(email = request.data['email'])
+        user.set_password(request.data['password']) #to make sure password is hashed
+        user.save()
+        token = Token.objects.create(user=user)
+        return Response({"user": serializer.data})
+    return Response(serializer.errors, status= status.HTTP_400_BAD_REQUEST)
+
+
+#test tokens are valid:
+
 @api_view(['GET'])
 @authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsAuthenticated])
