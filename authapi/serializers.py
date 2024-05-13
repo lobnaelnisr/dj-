@@ -5,10 +5,10 @@ from django.contrib.auth.models import User
 class UserSerializers(serializers.ModelSerializer):
     class Meta(object):
         model = User
-        fields = ['id','username', 'email','password']
+        fields = ['id','username', 'email','password','is_active']
         
 
 class UserListSerializers(serializers.ModelSerializer):
     class Meta(object):
         model = User
-        fields = ['id', 'username', 'email']          
+        fields = ['id', 'username', 'email', 'is_active']          
