@@ -100,3 +100,14 @@ class MyPasswordResetCompleteView(PasswordResetCompleteView):
         response = HttpResponseRedirect(external_link)
         return response
 
+
+# suspend users:
+
+@api_view(['POST'])
+def suspend_users(request):
+    user = get_object_or_404(User, email = request.data['email'])
+    serializer = UserListSerializers(instance=user)
+    user.is_active = request.data['is_active']
+    user.save()
+    return Response({"user": serializer.data})
+
