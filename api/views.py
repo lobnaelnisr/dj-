@@ -99,7 +99,8 @@ def unique(request):
             'userEmail': email,
             'Session_Started': start,
             'Session_Ended': end,
-            'Session_Duration': session_duration_str
+            'Session_Duration':session_duration_minutes,
+            'Session_Duration_Txt': session_duration_str
         })
 
     return Response(unique_sessions)
@@ -113,3 +114,46 @@ def parse_time(time_str):
             return datetime.strptime(time_str, '%H:%M:%S')
     else:
         raise ValueError("Invalid time format: {}".format(time_str))
+    
+
+#User cumulative sessions time
+
+@api_view(['GET'])
+def total_sessions_duration(request):
+    session_durations = []
+    email_total_durations = {}
+
+    data = SessionData.objects.values('userEmail', 'SessionStartedAt').annotate(Max('CaptureTime'))
+
+    for entry in data:
+        email = entry['userEmail']
+        session_start = parse_time(entry['SessionStartedAt'])
+        capture_time = entry['CaptureTime__max']
+        if capture_time:
+            capture_time = parse_time(capture_time)
+            session_duration_seconds = (capture_time - session_start).total_seconds()
+            session_duration_minutes = session_duration_seconds / 60
+            session_duration_str = f"{session_duration_minutes:.2f} minutes"  # Format session duration
+        else:
+            session_duration_str = "0 minutes"
+
+        # Add session duration to the list
+        session_durations.append({
+            'userEmail': email,
+            'Session_Duration': session_duration_minutes,
+            'Session_Duration_Txt': session_duration_str
+        })
+
+        # Aggregate total session duration for each email
+        if email in email_total_durations:
+            email_total_durations[email] += session_duration_minutes
+        else:
+            email_total_durations[email] = session_duration_minutes
+
+    # Generate the total_durations list in the desired format
+    total_durations = [
+        {'userEmail': email, 'Total_Session_Duration': total_duration, 'Total_Session_Duration_Txt': f"{total_duration:.2f} minutes"}
+        for email, total_duration in email_total_durations.items()
+    ]
+
+    return Response(total_durations)
