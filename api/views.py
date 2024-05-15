@@ -5,8 +5,8 @@ from .serializers import SessionDataSerializer
 from django.http import JsonResponse
 from rest_framework import status
 from rest_framework.decorators import api_view
-#from pymongo import MongoClient
 #from rest_framework import generics
+
 
 # API Overview View
 @api_view(['POST'])
@@ -45,4 +45,29 @@ def api_overview(request):
         
     }
     return Response(api_urls)
+
+## Separate records with the same email & start time
+
+@api_view(['GET'])
+def separate_records(request):
+    user_data = SessionData.objects.all()
+    separated_data = {}
+    for data in user_data:
+        key = (data.userEmail, data.SessionStartedAt)
+        if key not in separated_data:
+            separated_data[key] = {'records': [], 'last_record': None}
+        separated_data[key]['records'].append(data)
+        separated_data[key]['last_record'] = data
+
+    serialized_data = []
+    for email, session_data in separated_data.items():
+        serialized_session = {
+            'email': email,
+            'records': SessionDataSerializer(session_data['records'], many=True).data,
+            'last_record': SessionDataSerializer(session_data['last_record']).data
+        }
+        serialized_data.append(serialized_session)
+
+    return Response(serialized_data)
+
 
