@@ -87,6 +87,8 @@ def unique(request):
     for entry in data:
         email = entry['userEmail']
         session_start = parse_time(entry['SessionStartedAt'])
+        start = entry['SessionStartedAt']
+        end = entry['CaptureTime__max']
         capture_time = entry['CaptureTime__max']
         if capture_time:
             capture_time = parse_time(capture_time)
@@ -98,9 +100,9 @@ def unique(request):
 
         unique_sessions.append({
             'userEmail': email,
-            'SessionStartedAt': session_start,
-            'MaxCaptureTime': capture_time,
-            'SessionDuration': session_duration_str
+            'Session_Started': start,
+            'Session_Ended': end,
+            'Session_Duration': session_duration_str
         })
 
     return Response(unique_sessions)
