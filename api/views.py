@@ -5,6 +5,12 @@ from .serializers import SessionDataSerializer
 from django.http import JsonResponse
 from rest_framework import status
 from rest_framework.decorators import api_view
+from django.db.models import Max
+from datetime import datetime
+import re
+
+
+
 #from rest_framework import generics
 
 
@@ -70,4 +76,41 @@ def separate_records(request):
 
     return Response(serialized_data)
 
+#last record only 
 
+#SessionData
+@api_view(['GET'])
+def unique(request):
+    unique_sessions = []
+    data = SessionData.objects.values('userEmail', 'SessionStartedAt').annotate(Max('CaptureTime'))
+
+    for entry in data:
+        email = entry['userEmail']
+        session_start = parse_time(entry['SessionStartedAt'])
+        capture_time = entry['CaptureTime__max']
+        if capture_time:
+            capture_time = parse_time(capture_time)
+            session_duration_seconds = (capture_time - session_start).total_seconds()
+            session_duration_minutes = session_duration_seconds / 60
+            session_duration_str = f"{session_duration_minutes:.2f} minutes"  # Format session duration
+        else:
+            session_duration_str = "0 minutes"
+
+        unique_sessions.append({
+            'userEmail': email,
+            'SessionStartedAt': session_start,
+            'MaxCaptureTime': capture_time,
+            'SessionDuration': session_duration_str
+        })
+
+    return Response(unique_sessions)
+
+def parse_time(time_str):
+    match = re.match(r'(\d+):(\d+):(\d+)(?:\.(\d+))?', time_str)
+    if match:
+        if match.group(4):
+            return datetime.strptime(time_str, '%H:%M:%S.%f')
+        else:
+            return datetime.strptime(time_str, '%H:%M:%S')
+    else:
+        raise ValueError("Invalid time format: {}".format(time_str))
