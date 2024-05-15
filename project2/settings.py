@@ -85,7 +85,7 @@ WSGI_APPLICATION = 'project2.wsgi.application'
 DATABASES = {
     'default': {
 
-        'ENGINE': 'django.db.backends.mysql',
+        'ENGINE': 'django.db.backends.mysq',
 
         'NAME': 'morphcast',
         'USER': 'lobna',
@@ -161,5 +161,5 @@ EMAIL_BACKEND ='django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST ='smtp.gmail.com'
 EMAIL_PORT ='587'                                     #for TLS
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER ='ahmedeid2504@gmail.com'             #ur email
-EMAIL_HOST_PASSWORD ='tgah icfr ocgi bkfc'         #ur password 
+EMAIL_HOST_USER ='insightlearnmis@gmail.com'             #ur email
+EMAIL_HOST_PASSWORD ='uets unyv heyo zmkj'         #ur password   #auth_new ; zjao ckeu qwsb zmco

@@ -8,9 +8,6 @@ from rest_framework.decorators import api_view
 from django.db.models import Max
 from datetime import datetime
 import re
-
-
-
 #from rest_framework import generics
 
 
