@@ -12,12 +12,10 @@ urlpatterns = [
     re_path('test_token/', views.test_token),
     path('change_password/', change_password, name='change_password'),
     re_path('users/', UserListView.as_view(), name='user-list'),
-     #to add users manually
-    re_path('add_user/', views.addUser),
-    #to change user status           
-    re_path('suspend/',views.suspend_users, name='user-status'),      
+    re_path('add_user/', views.addUser),                                    #to add users manually           
+    re_path('suspend_users/',views.suspend_users, name='user-status'),      #to change user status
+    # forget password :    
     path('external-link/', external_link_view, name='external-link-url'),
-    # forget password :
     path('reset_password/', auth_views.PasswordResetView.as_view(), name="reset_password"),
     path('reset_password_sent/', auth_views.PasswordResetDoneView.as_view(), name="password_reset_done"),
     path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name="password_reset_confirm"),
