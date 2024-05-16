@@ -8,3 +8,4 @@ class SessionDataSerializer(serializers.ModelSerializer):
         model = SessionData
         fields = '__all__'
         
+        

@@ -79,13 +79,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'project2.wsgi.application'
 
 
-
-#DATABASES = {
-#    'default': {
-#        'ENGINE': 'django.db.backends.sqlite3',
-#        'NAME':'db.sqlite3',
-#    }
-#}
 #django.db.backends.mysql
 #mysql.connector.django
 
@@ -164,9 +157,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 #SMTP Conf: (YOU ORG REAL EMAIL TO BE USED HERE AUTO)
 
-#EMAIL_BACKEND ='django.core.mail.backends.smtp.EmailBackend'
-#EMAIL_HOST ='smtp.gmail.com'
-#EMAIL_PORT ='587'                                     #for TLS
-#EMAIL_USE_TLS = True
-#EMAIL_HOST_USER ='ahmedeid2504@gmail.com'             #ur email
-#EMAIL_HOST_PASSWORD ='tgah icfr ocgi bkfc'         #ur password 
+EMAIL_BACKEND ='django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST ='smtp.gmail.com'
+EMAIL_PORT ='587'                                     #for TLS
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER ='insightlearnmis@gmail.com'             #ur email
+EMAIL_HOST_PASSWORD ='uets unyv heyo zmkj'         #ur password   #auth_new ; zjao ckeu qwsb zmco

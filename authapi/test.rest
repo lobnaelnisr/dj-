@@ -1,21 +1,47 @@
 POST http://127.0.0.1:8000/login/
 Content-Type: application/json
 
-{ "email": "kokii@email.co", "password": "ll665066" }
+{ "email": "amiranayel978@gmail.com", "password": "123" }
 #### 
 #####
 POST http://127.0.0.1:8000/signup/
 Content-Type: application/json
 
 {"username":"testuser", "email": "testuser@email.co", "password": "ll665066" }
-####
 
+######
+POST http://127.0.0.1:8000/change_password/
+Content-Type: application/json
+
+{"email": "amiranayel978@gmail.com", "password": "000" , "new_password": "123"}
+
+####
 GET http://127.0.0.1:8000/test_token
 Content-Type: application/json
 Authorization: Token 5b4edd9f26087d0cc32e7bf79d2b2c1c73e3fb30
 
 {}
+#######
+
+POST http://127.0.0.1:8000/add_user/
+Content-Type: application/json
+
+{"username":"mera", "email": "meromaroo291@gmail.com", "password": "ll665066" }
 
 #######
 GET http://127.0.0.1:8000/users/
 Content-Type: application/json
+
+#################
+
+GET http://127.0.0.1:8000/accounts/reset/done/
+Content-Type: application/json
+
+
+############
+POST http://127.0.0.1:8000/suspend/
+Content-Type: application/json
+
+{"email": "amiranayel978@gmail.com", "is_active": "False" }
+
+###########
