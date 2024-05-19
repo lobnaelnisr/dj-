@@ -11,6 +11,7 @@ from django.contrib.auth.views import PasswordResetCompleteView
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.shortcuts import redirect
+from django.contrib.auth import logout
 
 
 @api_view(['POST'])
@@ -34,6 +35,15 @@ def signup(request):
         token = Token.objects.create(user=user)
         return Response({"token": token.key, "user": serializer.data})
     return Response(serializer.errors, status= status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def logout_user(request):
+    logout(request)
+    return Response({"message": "Logout successful"}, status=status.HTTP_200_OK)
+
 
 #change password 
 @api_view(['POST'])

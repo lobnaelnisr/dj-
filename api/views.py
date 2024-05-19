@@ -1,5 +1,4 @@
-from rest_framework import viewsets # type: ignore
-from rest_framework.response import Response # type: ignore
+from rest_framework.response import Response 
 from .models import SessionData
 from .serializers import SessionDataSerializer
 from django.http import JsonResponse
@@ -8,7 +7,6 @@ from rest_framework.decorators import api_view
 from django.db.models import Max
 from datetime import datetime
 import re
-#from rest_framework import generics
 
 
 # API Overview View
@@ -18,8 +16,8 @@ def create( request):
         serializer = SessionDataSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED) # type: ignore
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) # type: ignore
+            return Response(serializer.data, status=status.HTTP_201_CREATED) 
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) 
 
 
 @api_view(['GET'])    
@@ -29,27 +27,32 @@ def list( request):
         serializer = SessionDataSerializer(queryset, many=True)
         return JsonResponse({'users-data':serializer.data}, safe= False)
 
+
 @api_view(['GET'])
 def api_overview(request):
     """
-    Provides an overview of the available API endpoints.
+    overview of the available API endpoints.
     """
     api_urls = {
         'To show all data': '/view',
         'To add new data ': '/add',
-        'morph data format ': '{ "CaptureTime":"0","SessionEndedAt":" 0" ,"SessionStartedAt":" 0" ,"arousal":" 0"   ,"attention":" 0"  ,"dominantEmotion": " txt" , "volume":" 0" , "SessionEndedAt":" 0"}',
-        'to login to your account ': 'login/',
-        'login format':'{ "username": "test", "password": "0000" }',
-        'to sign-up for the first time ': 'signup/',
-        'signup format':'{ "username": "test", "password": "0000" , "email": "test@email.co" }',
-        'to test token validity ': 'test_token/',
         'to show all users': 'users/',
+        'to login to your account ': 'login/',
+        'to sign-up for the first time ': 'signup/',
+        'to test token validity ': 'test_token/',
         'to reset your password':'reset_password/',
+        'to change your password': 'change_password/',
+        'to change user status':'suspend_users/',
+        'to add users manually':'add_user/',
+        'to change user status':'suspend_users/',
+        'to view each session details':'unique/',
+        'to view total time spent by each user ':'total_sessions_duration/',
+
         
     }
     return Response(api_urls)
 
-## Separate records with the same email & start time
+## Separate records of each session to each user:
 
 @api_view(['GET'])
 def separate_records(request):
@@ -73,7 +76,7 @@ def separate_records(request):
 
     return Response(serialized_data)
 
-#last record only 
+# each session duration: 
 
 #SessionData
 @api_view(['GET'])
@@ -104,6 +107,9 @@ def unique(request):
         })
 
     return Response(unique_sessions)
+
+
+#adjust time format:
 
 def parse_time(time_str):
     match = re.match(r'(\d+):(\d+):(\d+)(?:\.(\d+))?', time_str)
@@ -137,23 +143,21 @@ def total_sessions_duration(request):
         else:
             session_duration_str = "0 minutes"
 
-        # Add session duration to the list
         session_durations.append({
             'userEmail': email,
             'Session_Duration': session_duration_minutes,
             'Session_Duration_Txt': session_duration_str
         })
 
-        # Aggregate total session duration for each email
         if email in email_total_durations:
             email_total_durations[email] += session_duration_minutes
         else:
             email_total_durations[email] = session_duration_minutes
 
-    # Generate the total_durations list in the desired format
     total_durations = [
         {'userEmail': email, 'Total_Session_Duration': total_duration, 'Total_Session_Duration_Txt': f"{total_duration:.2f} minutes"}
         for email, total_duration in email_total_durations.items()
     ]
 
     return Response(total_durations)
+

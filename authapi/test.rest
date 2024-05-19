@@ -18,11 +18,17 @@ Content-Type: application/json
 ####
 GET http://127.0.0.1:8000/test_token
 Content-Type: application/json
-Authorization: Token 5b4edd9f26087d0cc32e7bf79d2b2c1c73e3fb30
+Authorization: Token 53cbbaad5a9dc82d0a92eeed0cde02c7a7003eb1
 
 {}
-#######
 
+###########
+POST http://127.0.0.1:8000/logout/
+Content-Type: application/json
+Authorization: Token 53cbbaad5a9dc82d0a92eeed0cde02c7a7003eb1
+
+{}
+##################
 POST http://127.0.0.1:8000/add_user/
 Content-Type: application/json
 
