@@ -8,7 +8,7 @@ class SessionData(models.Model):
     Session_for = models.CharField(max_length=255, default='')
     arousal = models.IntegerField(null=True, blank=True)
     attention = models.IntegerField(null=True, blank=True)
-    dominantEmotion = models.CharField(max_length=50, null=True, blank=True)
+    dominantEmotion = models.CharField(max_length=50, null=True, blank=True, default='Neutral')
     userEmail = models.CharField(max_length=100)
     valence = models.FloatField(null=True, blank=True)
     volume = models.FloatField(null=True, blank=True)
