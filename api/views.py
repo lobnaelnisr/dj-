@@ -41,6 +41,8 @@ arabic_to_english = {
 }
 
 def convert_arabic_to_english(time_str):
+    if time_str is None:
+        return None
     return ''.join(arabic_to_english.get(char, char) for char in time_str)
 
 def parse_time(time_str):
