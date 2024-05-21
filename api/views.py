@@ -77,12 +77,22 @@ def create(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])    
-def list( request):
+def list(request):
     if request.method == 'GET':
         queryset = SessionData.objects.all()
         serializer = SessionDataSerializer(queryset, many=True)
-        return JsonResponse({'users-data':serializer.data}, safe= False)
+        data = serializer.data
 
+        # Convert Arabic numerals to English numerals in the relevant fields
+        for item in data:
+            if item.get('CaptureTime'):
+                item['CaptureTime'] = convert_arabic_to_english(item['CaptureTime'])
+            if item.get('SessionEndedAt'):
+                item['SessionEndedAt'] = convert_arabic_to_english(item['SessionEndedAt'])
+            if item.get('SessionStartedAt'):
+                item['SessionStartedAt'] = convert_arabic_to_english(item['SessionStartedAt'])
+
+        return JsonResponse({'users-data': data}, safe=False)
 
 ## Separate records of each session to each user:
 
