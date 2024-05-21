@@ -10,24 +10,6 @@ import re
 
 
 # API Overview View
-@api_view(['POST'])
-def create( request):
-    if request.method == 'POST':
-        serializer = SessionDataSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED) 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) 
-
-
-@api_view(['GET'])    
-def list( request):
-    if request.method == 'GET':
-        queryset = SessionData.objects.all()
-        serializer = SessionDataSerializer(queryset, many=True)
-        return JsonResponse({'users-data':serializer.data}, safe= False)
-
-
 @api_view(['GET'])
 def api_overview(request):
     """
@@ -51,6 +33,56 @@ def api_overview(request):
         
     }
     return Response(api_urls)
+
+
+#adjust time format:
+arabic_to_english = {
+    '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4', '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9'
+}
+
+def convert_arabic_to_english(time_str):
+    return ''.join(arabic_to_english.get(char, char) for char in time_str)
+
+def parse_time(time_str):
+    if not time_str:
+        raise ValueError("Time string is empty")
+    
+    time_str = convert_arabic_to_english(time_str)
+    match = re.match(r'(\d+):(\d+):(\d+)(?:\.(\d+))?', time_str)
+    if match:
+        if match.group(4):
+            return datetime.strptime(time_str, '%H:%M:%S.%f')
+        else:
+            return datetime.strptime(time_str, '%H:%M:%S')
+    else:
+        raise ValueError("Invalid time format: {}".format(time_str))
+    
+
+@api_view(['POST'])
+def create(request):
+    if request.method == 'POST':
+        # Convert Arabic numerals to English numerals for relevant fields
+        data = request.data.copy()
+        if 'CaptureTime' in data:
+            data['CaptureTime'] = convert_arabic_to_english(data['CaptureTime'])
+        if 'SessionEndedAt' in data:
+            data['SessionEndedAt'] = convert_arabic_to_english(data['SessionEndedAt'])
+        if 'SessionStartedAt' in data:
+            data['SessionStartedAt'] = convert_arabic_to_english(data['SessionStartedAt'])
+
+        serializer = SessionDataSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])    
+def list( request):
+    if request.method == 'GET':
+        queryset = SessionData.objects.all()
+        serializer = SessionDataSerializer(queryset, many=True)
+        return JsonResponse({'users-data':serializer.data}, safe= False)
+
 
 ## Separate records of each session to each user:
 
@@ -109,26 +141,10 @@ def unique(request):
             })
 
         except ValueError as e:
-            # Log the error or handle it as needed
             print(f"Error parsing time for email {email}: {e}")
 
     return Response(unique_sessions)
 
-
-#adjust time format:
-
-def parse_time(time_str):
-    if not time_str:
-        raise ValueError("Time string is empty")
-    
-    match = re.match(r'(\d+):(\d+):(\d+)(?:\.(\d+))?', time_str)
-    if match:
-        if match.group(4):
-            return datetime.strptime(time_str, '%H:%M:%S.%f')
-        else:
-            return datetime.strptime(time_str, '%H:%M:%S')
-    else:
-        raise ValueError("Invalid time format: {}".format(time_str))
 
 #User cumulative sessions time
 
@@ -167,7 +183,6 @@ def total_sessions_duration(request):
                 email_total_durations[email] = session_duration_minutes
 
         except ValueError as e:
-            
             print(f"Error parsing time for email {email}: {e}")
 
     total_durations = [
