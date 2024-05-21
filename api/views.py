@@ -161,7 +161,7 @@ def total_sessions_duration(request):
                 email_total_durations[email] = session_duration_minutes
 
         except ValueError as e:
-            # Log the error or handle it as needed
+            
             print(f"Error parsing time for email {email}: {e}")
 
     total_durations = [
