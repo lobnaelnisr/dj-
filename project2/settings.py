@@ -14,8 +14,7 @@ SECRET_KEY = 'django-insecure-lwd7pzt&(6*6^l8lmwoz6fdcrznsf959hzo%6*-4wuxltu4(0^
 #SECRET_KEY = os.environ.get("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-#os.environ.get("DEBUG", "False").lower() == "True"
+DEBUG = os.environ.get("DEBUG", "False").lower() == "True"
 
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "*").split(" ")
 
@@ -86,7 +85,7 @@ WSGI_APPLICATION = 'project2.wsgi.application'
 DATABASES = {
     'default': {
 
-        'ENGINE': 'mysql.connector.django',
+        'ENGINE': 'django.db.backends.mysql',
 
         'NAME': 'morphcast',
         'USER': 'lobna',

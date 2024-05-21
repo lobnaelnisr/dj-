@@ -86,25 +86,31 @@ def unique(request):
 
     for entry in data:
         email = entry['userEmail']
-        session_start = parse_time(entry['SessionStartedAt'])
-        start = entry['SessionStartedAt']
-        end = entry['CaptureTime__max']
+        session_start = entry['SessionStartedAt']
         capture_time = entry['CaptureTime__max']
-        if capture_time:
-            capture_time = parse_time(capture_time)
-            session_duration_seconds = (capture_time - session_start).total_seconds()
-            session_duration_minutes = session_duration_seconds / 60
-            session_duration_str = f"{session_duration_minutes:.2f} minutes"  # Format session duration
-        else:
-            session_duration_str = "0 minutes"
 
-        unique_sessions.append({
-            'userEmail': email,
-            'Session_Started': start,
-            'Session_Ended': end,
-            'Session_Duration':session_duration_minutes,
-            'Session_Duration_Txt': session_duration_str
-        })
+        try:
+            session_start_parsed = parse_time(session_start)
+            if capture_time:
+                capture_time_parsed = parse_time(capture_time)
+                session_duration_seconds = (capture_time_parsed - session_start_parsed).total_seconds()
+                session_duration_minutes = session_duration_seconds / 60
+                session_duration_str = f"{session_duration_minutes:.2f} minutes"
+            else:
+                session_duration_minutes = 0
+                session_duration_str = "0 minutes"
+
+            unique_sessions.append({
+                'userEmail': email,
+                'Session_Started': session_start,
+                'Session_Ended': capture_time,
+                'Session_Duration': session_duration_minutes,
+                'Session_Duration_Txt': session_duration_str
+            })
+
+        except ValueError as e:
+            # Log the error or handle it as needed
+            print(f"Error parsing time for email {email}: {e}")
 
     return Response(unique_sessions)
 
