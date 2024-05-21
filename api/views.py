@@ -112,6 +112,9 @@ def unique(request):
 #adjust time format:
 
 def parse_time(time_str):
+    if not time_str:
+        raise ValueError("Time string is empty")
+    
     match = re.match(r'(\d+):(\d+):(\d+)(?:\.(\d+))?', time_str)
     if match:
         if match.group(4):
@@ -120,7 +123,6 @@ def parse_time(time_str):
             return datetime.strptime(time_str, '%H:%M:%S')
     else:
         raise ValueError("Invalid time format: {}".format(time_str))
-    
 
 #User cumulative sessions time
 
@@ -133,26 +135,34 @@ def total_sessions_duration(request):
 
     for entry in data:
         email = entry['userEmail']
-        session_start = parse_time(entry['SessionStartedAt'])
+        session_start = entry['SessionStartedAt']
         capture_time = entry['CaptureTime__max']
-        if capture_time:
-            capture_time = parse_time(capture_time)
-            session_duration_seconds = (capture_time - session_start).total_seconds()
-            session_duration_minutes = session_duration_seconds / 60
-            session_duration_str = f"{session_duration_minutes:.2f} minutes"  # Format session duration
-        else:
-            session_duration_str = "0 minutes"
 
-        session_durations.append({
-            'userEmail': email,
-            'Session_Duration': session_duration_minutes,
-            'Session_Duration_Txt': session_duration_str
-        })
+        try:
+            session_start_parsed = parse_time(session_start)
+            if capture_time:
+                capture_time_parsed = parse_time(capture_time)
+                session_duration_seconds = (capture_time_parsed - session_start_parsed).total_seconds()
+                session_duration_minutes = session_duration_seconds / 60
+                session_duration_str = f"{session_duration_minutes:.2f} minutes"
+            else:
+                session_duration_minutes = 0
+                session_duration_str = "0 minutes"
 
-        if email in email_total_durations:
-            email_total_durations[email] += session_duration_minutes
-        else:
-            email_total_durations[email] = session_duration_minutes
+            session_durations.append({
+                'userEmail': email,
+                'Session_Duration': session_duration_minutes,
+                'Session_Duration_Txt': session_duration_str
+            })
+
+            if email in email_total_durations:
+                email_total_durations[email] += session_duration_minutes
+            else:
+                email_total_durations[email] = session_duration_minutes
+
+        except ValueError as e:
+            # Log the error or handle it as needed
+            print(f"Error parsing time for email {email}: {e}")
 
     total_durations = [
         {'userEmail': email, 'Total_Session_Duration': total_duration, 'Total_Session_Duration_Txt': f"{total_duration:.2f} minutes"}
@@ -160,4 +170,3 @@ def total_sessions_duration(request):
     ]
 
     return Response(total_durations)
-
