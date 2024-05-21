@@ -126,12 +126,13 @@ def separate_records(request):
 @api_view(['GET'])
 def unique(request):
     unique_sessions = []
-    data = SessionData.objects.values('userEmail', 'SessionStartedAt').annotate(Max('CaptureTime'))
+    data = SessionData.objects.values('userEmail', 'SessionStartedAt','Session_for').annotate(Max('CaptureTime'))
 
     for entry in data:
         email = entry['userEmail']
         session_start = entry['SessionStartedAt']
         capture_time = entry['CaptureTime__max']
+        session_for = entry['Session_for']
 
         try:
             session_start_parsed = parse_time(session_start)
@@ -146,6 +147,7 @@ def unique(request):
 
             unique_sessions.append({
                 'userEmail': email,
+                'session_for': session_for,
                 'Session_Started': session_start,
                 'Session_Ended': capture_time,
                 'Session_Duration': session_duration_minutes,
@@ -165,12 +167,13 @@ def total_sessions_duration(request):
     session_durations = []
     email_total_durations = {}
 
-    data = SessionData.objects.values('userEmail', 'SessionStartedAt').annotate(Max('CaptureTime'))
+    data = SessionData.objects.values('userEmail', 'SessionStartedAt','Session_for').annotate(Max('CaptureTime'))
 
     for entry in data:
         email = entry['userEmail']
         session_start = entry['SessionStartedAt']
         capture_time = entry['CaptureTime__max']
+        session_for = entry['Session_for']
 
         try:
             session_start_parsed = parse_time(session_start)
@@ -185,6 +188,7 @@ def total_sessions_duration(request):
 
             session_durations.append({
                 'userEmail': email,
+                'session_for': session_for,
                 'Session_Duration': session_duration_minutes,
                 'Session_Duration_Txt': session_duration_str
             })
@@ -198,7 +202,7 @@ def total_sessions_duration(request):
             print(f"Error parsing time for email {email}: {e}")
 
     total_durations = [
-        {'userEmail': email, 'Total_Session_Duration': total_duration, 'Total_Session_Duration_Txt': f"{total_duration:.2f} minutes"}
+        {'userEmail': email, 'session_for':session_for, 'Total_Session_Duration': total_duration, 'Total_Session_Duration_Txt': f"{total_duration:.2f} minutes"}
         for email, total_duration in email_total_durations.items()
     ]
 
