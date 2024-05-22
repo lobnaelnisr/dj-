@@ -4,7 +4,7 @@ from .serializers import SessionDataSerializer
 from django.http import JsonResponse
 from rest_framework import status
 from rest_framework.decorators import api_view
-from django.db.models import Max
+from django.db.models import Max ,Min, Avg
 from datetime import datetime
 import re
 
@@ -126,13 +126,39 @@ def separate_records(request):
 @api_view(['GET'])
 def unique(request):
     unique_sessions = []
-    data = SessionData.objects.values('userEmail', 'SessionStartedAt','Session_for').annotate(Max('CaptureTime'))
+    data = SessionData.objects.values('userEmail', 'SessionStartedAt','Session_for').annotate(
+        max_CaptureTime=Max('CaptureTime'),
+        max_attention =Max('attention'),
+        min_attention =Min('attention'),
+        average_attention=Avg('attention'),
+        max_arousal =Max('arousal'),
+        min_arousal =Min('arousal'),
+        average_arousal=Avg('arousal'),
+        max_valence=Max('valence'),
+        min_valence=Min('valence'),
+        avg_valence=Avg('valence'),
+        max_volume=Max('volume'),
+        min_volume=Min('volume'),
+        avg_volume=Avg('volume') 
+        )
 
     for entry in data:
         email = entry['userEmail']
         session_start = entry['SessionStartedAt']
-        capture_time = entry['CaptureTime__max']
+        capture_time = entry['max_CaptureTime']
         session_for = entry['Session_for']
+        max_attention =entry['max_attention']
+        min_attention=entry['min_attention']
+        average_attention=entry['average_attention']
+        max_arousal=entry['max_arousal']
+        min_arousal=entry['min_arousal']
+        average_arousal=entry['average_arousal']
+        max_valence=entry['max_valence']
+        min_valence=entry['min_valence']
+        avg_valence=entry['avg_valence']
+        max_volume=entry['max_volume']
+        min_volume=entry['min_volume']
+        avg_volume=entry['avg_volume']
 
         try:
             session_start_parsed = parse_time(session_start)
@@ -151,7 +177,19 @@ def unique(request):
                 'Session_Started': session_start,
                 'Session_Ended': capture_time,
                 'Session_Duration': session_duration_minutes,
-                'Session_Duration_Txt': session_duration_str
+                'Session_Duration_Txt': session_duration_str,
+                'max_attention':max_attention,
+                'min_attention':min_attention,
+                'average_attention':average_attention,
+                'max_arousal':max_arousal,
+                'min_arousal':min_arousal,
+                'average_arousal':average_arousal,
+                'max_valence':max_valence,
+                'min_valence':min_valence,
+                'average_valence':avg_valence,
+                'max_volume':max_volume,
+                'min_volume':min_volume,
+                'average_volume':avg_volume
             })
 
         except ValueError as e:
@@ -167,13 +205,39 @@ def total_sessions_duration(request):
     session_durations = []
     email_total_durations = {}
 
-    data = SessionData.objects.values('userEmail', 'SessionStartedAt','Session_for').annotate(Max('CaptureTime'))
+    data = SessionData.objects.values('userEmail', 'SessionStartedAt','Session_for').annotate(
+        max_CaptureTime=Max('CaptureTime'),
+        max_attention =Max('attention'),
+        min_attention =Min('attention'),
+        average_attention=Avg('attention'),
+        max_arousal =Max('arousal'),
+        min_arousal =Min('arousal'),
+        average_arousal=Avg('arousal'),
+        max_valence=Max('valence'),
+        min_valence=Min('valence'),
+        avg_valence=Avg('valence'),
+        max_volume=Max('volume'),
+        min_volume=Min('volume'),
+        avg_volume=Avg('volume')
+        )
 
     for entry in data:
         email = entry['userEmail']
         session_start = entry['SessionStartedAt']
-        capture_time = entry['CaptureTime__max']
+        capture_time = entry['max_CaptureTime']
         session_for = entry['Session_for']
+        max_attention =entry['max_attention']
+        min_attention=entry['min_attention']
+        average_attention=entry['average_attention']
+        max_arousal=entry['max_arousal']
+        min_arousal=entry['min_arousal']
+        average_arousal=entry['average_arousal']
+        max_valence=entry['max_valence']
+        min_valence=entry['min_valence']
+        avg_valence=entry['avg_valence']
+        max_volume=entry['max_volume']
+        min_volume=entry['min_volume']
+        avg_volume=entry['avg_volume']
 
         try:
             session_start_parsed = parse_time(session_start)
@@ -190,7 +254,19 @@ def total_sessions_duration(request):
                 'userEmail': email,
                 'session_for': session_for,
                 'Session_Duration': session_duration_minutes,
-                'Session_Duration_Txt': session_duration_str
+                'Session_Duration_Txt': session_duration_str,
+                'max_attention':max_attention,
+                'min_attention':min_attention,
+                'average_attention':average_attention,
+                'max_arousal':max_arousal,
+                'min_arousal':min_arousal,
+                'average_arousal':average_arousal,
+                'max_valence':max_valence,
+                'min_valence':min_valence,
+                'average_valence':avg_valence,
+                'max_volume':max_volume,
+                'min_volume':min_volume,
+                'average_volume':avg_volume
             })
 
             if email in email_total_durations:
@@ -202,7 +278,7 @@ def total_sessions_duration(request):
             print(f"Error parsing time for email {email}: {e}")
 
     total_durations = [
-        {'userEmail': email, 'session_for':session_for, 'Total_Session_Duration': total_duration, 'Total_Session_Duration_Txt': f"{total_duration:.2f} minutes"}
+        {'userEmail': email, 'session_for':session_for, 'Total_Sessions_Duration': total_duration, 'Total_Sessions_Duration_Txt': f"{total_duration:.2f} minutes", 'max_attention':max_attention, 'min_attention':min_attention, 'average_attention':average_attention, 'max_arousal':max_arousal, 'min_arousal':min_arousal,'average_arousal':average_arousal, 'max_valence':max_valence, 'min_valence':min_valence, 'avg_valence':avg_valence, 'max_volume':max_volume, 'min_volume':min_volume, 'avg_volume':avg_volume}
         for email, total_duration in email_total_durations.items()
     ]
 
