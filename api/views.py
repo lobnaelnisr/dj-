@@ -30,6 +30,12 @@ def api_overview(request):
         'to change user status':'suspend_users/',
         'to view each session details':'unique/',
         'to view total time spent by each user ':'total_sessions_duration/',
+        'to view user personal info':'/fetchuserdata',
+        'to view the data of quizzes':'/fetchquiz',
+        'to view the data of assignments ':'/fetchassignment',
+        'to view the data sessions ':'/fetchsession',
+        
+
 
         
     }

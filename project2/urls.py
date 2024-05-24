@@ -7,7 +7,7 @@ urlpatterns = [
     path('', include('api.urls')),
     path('', include('authapi.urls')),
     path('', include('fetchapi.urls')),
-    #path('api-auth/', include('rest_framework.urls'))
+    
 ]
 
 urlpatterns += staticfiles_urlpatterns()   #
