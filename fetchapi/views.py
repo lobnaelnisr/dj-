@@ -57,3 +57,42 @@ def fetch_user_sessiondata(request):
     except Exception as e:
         logger.error(f"Error fetching user session data: {e}")
         return JsonResponse({'error': 'Error fetching user session data'}, status=500)    
+    
+@csrf_exempt
+def fetch_user_data(request):
+    try:
+        with connection.cursor() as cursor:
+            # Fetch field names from stu_info_field
+            cursor.execute("SELECT id, name FROM whole_proj.stu_info_field")
+            field_names = cursor.fetchall()
+            field_map = {field_id: field_name for field_id, field_name in field_names}
+
+            # Fetch data from Students and stu_info_data
+            cursor.execute("""
+                SELECT stu.id, stu.username, stu.email, sid.fieldid, sid.data
+                FROM whole_proj.Students stu
+                LEFT JOIN whole_proj.stu_info_data sid ON stu.id = sid.userid
+            """)
+            rows = cursor.fetchall()
+
+            # Transform rows into a dictionary with dynamic fields
+            user_data = {}
+            for row in rows:
+                user_id, username, email, fieldid, data = row
+                if user_id not in user_data:
+                    user_data[user_id] = {
+                        'id': user_id,
+                        'username': username,
+                        'email': email
+                    }
+                if fieldid and fieldid in field_map:
+                    field_name = field_map[fieldid]
+                    user_data[user_id][field_name] = data
+
+            # Convert the dictionary to a list for JSON response
+            data = list(user_data.values())
+
+        return JsonResponse({'data': data}, safe=False)
+    except Exception as e:
+        logger.error(f"Error fetching user data: {e}")
+        return JsonResponse({'error': 'Error fetching user data'}, status=500)
