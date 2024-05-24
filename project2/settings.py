@@ -34,6 +34,8 @@ INSTALLED_APPS = [
     'rest_framework',
 
     'corsheaders',
+    'fetchapi.apps.FetchapiConfig',
+
 ]
 
 MIDDLEWARE = [
@@ -92,7 +94,16 @@ DATABASES = {
         'PASSWORD': '6101973',
         'HOST': '4.157.125.46',
         'PORT': '3306',
-    }
+    },
+    'whole_db': {
+
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'whole_proj',
+        'USER': 'lobna',
+        'PASSWORD': '6101973',
+        'HOST': '4.157.125.46',
+        'PORT': '3306',
+    },
 
 }
 
