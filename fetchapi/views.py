@@ -38,8 +38,8 @@ def fetch_user_assignmentdata(request):
             data2 = [dict(zip(columns, row)) for row in rows]
         return JsonResponse({'data2': data2}, safe=False)
     except Exception as e:
-        logger.error(f"Error fetching user session data: {e}")
-        return JsonResponse({'error': 'Error fetching user session data'}, status=500)
+        logger.error(f"Error fetching user assignment data: {e}")
+        return JsonResponse({'error': 'Error fetching user assignment data'}, status=500)
     
 @csrf_exempt
 def fetch_user_sessiondata(request):
