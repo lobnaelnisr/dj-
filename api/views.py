@@ -4,13 +4,8 @@ from .serializers import SessionDataSerializer
 from django.http import JsonResponse
 from rest_framework import status
 from rest_framework.decorators import api_view
-<<<<<<< HEAD
-from django.db.models import Max
-from datetime import datetime 
-=======
 from django.db.models import Max ,Min, Avg
 from datetime import datetime
->>>>>>> 13bdba8de84c1f1918e3f977855b24851cc33de9
 import re
 
 
