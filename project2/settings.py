@@ -2,18 +2,14 @@
 import os   
 from pathlib import Path
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-lwd7pzt&(6*6^l8lmwoz6fdcrznsf959hzo%6*-4wuxltu4(0^'
 
 #SECRET_KEY = os.environ.get("SECRET_KEY")
 
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG", "False").lower() == "True"
 
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "*").split(" ")
@@ -53,10 +49,10 @@ MIDDLEWARE = [
 
 REST_FRAMEWORK = {'DEFAULT_PERMISSION_CLASSES':['rest_framework.permissions.AllowAny']}
 
-CORS_ORIGIN_ALLOW_ALL = True  # If you want to allow all origins
-# OR
+CORS_ORIGIN_ALLOW_ALL = True  
+
 CORS_ORIGIN_WHITELIST = [
-    'http://localhost:5173',  # Replace with the actual origin of your React app
+    'http://localhost:5173',  
 ]
 
 ROOT_URLCONF = 'project2.urls'
@@ -64,7 +60,7 @@ ROOT_URLCONF = 'project2.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        #'DIRS': [ os.path.join( BASE_DIR , 'templates')],
+        
         'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -106,8 +102,6 @@ DATABASES = {
     },
 
 }
-
-#database_url = os.environ.get("DATABASE_URL")
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -156,7 +150,7 @@ MEDIA_URL = "/media/"          #.
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-#SMTP Conf: (YOU ORG REAL EMAIL TO BE USED HERE AUTO)
+#SMTP Conf:
 
 EMAIL_BACKEND ='django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST ='smtp.gmail.com'
