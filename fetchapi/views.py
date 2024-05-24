@@ -11,10 +11,12 @@ def fetch_user_data(request):
     #try:
         with connection.cursor() as cursor:
             cursor.execute("""
-                SELECT stu.id AS student_id, stu.username, q.id AS quiz_id, q.name AS quiz_name, qa.sumgrades
+                SELECT stu.username, stu.email, q.Quiz_Name, c.Course, cs.Semester, qa.sumgrades
                 FROM whole_proj.Students stu
                 JOIN whole_proj.Quiz_Attempts qa ON stu.id = qa.userid
                 JOIN whole_proj.Quiz q ON qa.quiz = q.id
+                JOIN whole_proj.Course c ON q.course = c.id
+                JOIN whole_proj.Course_Semester cs ON c.category = cs.id
             """)
             rows = cursor.fetchall()
             columns = [col[0] for col in cursor.description]
