@@ -21,7 +21,7 @@ def fetch_user_quizdata(request):
             rows = cursor.fetchall()
             columns = [col[0] for col in cursor.description]
             data = [dict(zip(columns, row)) for row in rows]
-        return JsonResponse({'data': data}, safe=False)
+        return JsonResponse( data, safe=False)
     
 @csrf_exempt
 def fetch_user_assignmentdata(request):
@@ -36,7 +36,7 @@ def fetch_user_assignmentdata(request):
             rows = cursor.fetchall()
             columns = [col[0] for col in cursor.description]
             data2 = [dict(zip(columns, row)) for row in rows]
-        return JsonResponse({'data2': data2}, safe=False)
+        return JsonResponse(data2, safe=False)
     except Exception as e:
         logger.error(f"Error fetching user assignment data: {e}")
         return JsonResponse({'error': 'Error fetching user assignment data'}, status=500)
@@ -53,7 +53,7 @@ def fetch_user_sessiondata(request):
             rows = cursor.fetchall()
             columns = [col[0] for col in cursor.description]
             data3 = [dict(zip(columns, row)) for row in rows]
-        return JsonResponse({'data3': data3}, safe=False)
+        return JsonResponse( data3, safe=False)
     except Exception as e:
         logger.error(f"Error fetching user session data: {e}")
         return JsonResponse({'error': 'Error fetching user session data'}, status=500)    
@@ -92,7 +92,7 @@ def fetch_user_data(request):
             # Convert the dictionary to a list for JSON response
             data4 = list(user_data.values())
 
-        return JsonResponse({'data4': data4}, safe=False)
+        return JsonResponse(data4, safe=False)
     except Exception as e:
         logger.error(f"Error fetching user data: {e}")
         return JsonResponse({'error': 'Error fetching user data'}, status=500)
@@ -109,5 +109,5 @@ def fetch_user_coursedata(request):
             rows = cursor.fetchall()
             columns = [col[0] for col in cursor.description]
             data5 = [dict(zip(columns, row)) for row in rows]
-        return JsonResponse({'data5': data5}, safe=False)
+        return JsonResponse( data5, safe=False)
     
