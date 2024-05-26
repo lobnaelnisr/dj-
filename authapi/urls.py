@@ -15,12 +15,15 @@ urlpatterns = [
     re_path('users/', UserListView.as_view(), name='user-list'),
     re_path('add_user/', views.addUser),                                    #to add users manually           
     re_path('suspend_users/',views.suspend_users, name='user-status'),      #to change user status
+    path('update_user_staff_status/', update_user_staff_status, name='update_user_staff_status'),
+    path('update_user_superuser_status/', update_user_superuser_status, name='update_user_superuser_status'),
     # forget password :    
     path('external-link/', external_link_view, name='external-link-url'),
     path('reset_password/', auth_views.PasswordResetView.as_view(), name="reset_password"),
     path('reset_password_sent/', auth_views.PasswordResetDoneView.as_view(), name="password_reset_done"),
     path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name="password_reset_confirm"),
     path('accounts/reset/done/', MyPasswordResetCompleteView.as_view(), name="password_reset_complete"),
+    
 
 
 ]

@@ -121,3 +121,30 @@ def suspend_users(request):
     user.save()
     return Response({"user": serializer.data})
 
+@api_view(['POST'])
+def update_user_staff_status(request):
+    try:
+        user = get_object_or_404(User, email=request.data['email'])
+    except KeyError:
+        return Response({"error": "Email is required"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    if 'is_staff' in request.data:
+        user.is_staff = request.data['is_staff']
+        user.save()
+        serializer = UserListSerializers(instance=user)
+        return Response({"user": serializer.data}, status=status.HTTP_200_OK)
+    return Response({"error": "is_staff field is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+def update_user_superuser_status(request):
+    try:
+        user = get_object_or_404(User, email=request.data['email'])
+    except KeyError:
+        return Response({"error": "Email is required"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    if 'is_superuser' in request.data:
+        user.is_superuser = request.data['is_superuser']
+        user.save()
+        serializer = UserListSerializers(instance=user)
+        return Response({"user": serializer.data}, status=status.HTTP_200_OK)
+    return Response({"error": "is_superuser field is required"}, status=status.HTTP_400_BAD_REQUEST)
