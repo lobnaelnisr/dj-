@@ -96,3 +96,20 @@ def fetch_user_data(request):
     except Exception as e:
         logger.error(f"Error fetching user data: {e}")
         return JsonResponse({'error': 'Error fetching user data'}, status=500)
+    
+
+
+#@csrf_exempt
+def fetch_user_coursedata(request):
+    #try:
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT c.id, cs.Semester, c.Course
+                FROM whole_proj.Course c
+                JOIN whole_proj.Course_Semester cs ON c.category = cs.id
+            """)
+            rows = cursor.fetchall()
+            columns = [col[0] for col in cursor.description]
+            data5 = [dict(zip(columns, row)) for row in rows]
+        return JsonResponse( data5, safe=False)
+    

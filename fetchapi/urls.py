@@ -6,4 +6,6 @@ urlpatterns = [
     path('fetchassignment', views.fetch_user_assignmentdata ,name='fetchassignment'),
     path('fetchsession', views.fetch_user_sessiondata ,name='fetchsession'),
     path('fetchuserdata', views.fetch_user_data ,name='fetchuserdata'),
+    path('fetchcourse', views.fetch_user_coursedata ,name='fetchcourse'),
+
 ]
