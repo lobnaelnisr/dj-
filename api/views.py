@@ -13,9 +13,7 @@ import re
 # API Overview View
 @api_view(['GET'])
 def api_overview(request):
-    """
-    overview of the available API endpoints.
-    """
+    
     api_urls = {
         'To show all data': '/view',
         'To add new data ': '/add',

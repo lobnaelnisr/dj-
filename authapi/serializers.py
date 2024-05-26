@@ -19,5 +19,5 @@ class UserPasswordSerializers(serializers.ModelSerializer):
 class UserListSerializers(serializers.ModelSerializer):
     class Meta(object):
         model = User
-        fields = ['id', 'username', 'email', 'is_active']  
+        fields = ['id', 'username', 'email', 'is_active', 'is_staff', 'is_superuser']  
             
