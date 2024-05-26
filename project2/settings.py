@@ -88,7 +88,7 @@ DATABASES = {
         'NAME': 'morphcast',
         'USER': 'lobna',
         'PASSWORD': '6101973',
-        'HOST': '4.157.125.46',
+        'HOST': 'insightlearn.me',
         'PORT': '3306',
     },
     'whole_db': {
@@ -97,7 +97,7 @@ DATABASES = {
         'NAME': 'whole_proj',
         'USER': 'lobna',
         'PASSWORD': '6101973',
-        'HOST': '4.157.125.46',
+        'HOST': 'insightlearn.me',
         'PORT': '3306',
     },
 
