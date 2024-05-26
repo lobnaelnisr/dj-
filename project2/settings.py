@@ -86,18 +86,18 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
 
         'NAME': 'morphcast',
-        'USER': 'lobna',
+        'USER': 'admin',
         'PASSWORD': '6101973',
-        'HOST': '4.157.125.46',
+        'HOST': '4.227.176.131',
         'PORT': '3306',
     },
     'whole_db': {
 
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'whole_proj',
-        'USER': 'lobna',
+        'USER': 'admin',
         'PASSWORD': '6101973',
-        'HOST': '4.157.125.46',
+        'HOST': '4.227.176.131',
         'PORT': '3306',
     },
 
