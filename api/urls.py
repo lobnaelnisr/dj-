@@ -12,6 +12,7 @@ urlpatterns = [
     re_path('separated/', separate_records ),
     re_path('unique/', unique),
     re_path('total_sessions_duration/', total_sessions_duration),
+
     
 ]
 

@@ -102,7 +102,7 @@ def fetch_user_coursedata(request):
     #try:
         with connection.cursor() as cursor:
             cursor.execute("""
-                SELECT c.id, cs.Semester, c.Course
+                SELECT c.id, cs.Semester, c.Course_Name
                 FROM whole_proj.Course c
                 JOIN whole_proj.Course_Semester cs ON c.category = cs.id
             """)

@@ -32,6 +32,7 @@ def api_overview(request):
         'to view the data of quizzes':'/fetchquiz',
         'to view the data of assignments ':'/fetchassignment',
         'to view the data sessions ':'/fetchsession',
+        'to view the prediction  ':'/prediction',
         
 
 

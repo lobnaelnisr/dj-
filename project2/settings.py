@@ -14,6 +14,17 @@ DEBUG = os.environ.get("DEBUG", "False").lower() == "True"
 
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "*").split(" ")
 
+# Path to the model and scaler files
+#MODEL_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'svm_model(1).pkl')
+#DATA_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'fffffffffffffffff_test.xlsx')
+
+# settings.py
+import os
+
+# Path to the model and scaler files
+MODEL_PATH = os.path.join(BASE_DIR, 'svm_model (1).pkl')
+#DATA_PATH = os.path.join(BASE_DIR, 'fffffffffffffffff_test.xlsx')
+
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -32,6 +43,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'fetchapi.apps.FetchapiConfig',
 
+    'mlintegration.apps.MlIntegrationConfig',
 ]
 
 MIDDLEWARE = [
@@ -86,20 +98,18 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
 
         'NAME': 'morphcast',
-        'USER': 'admin',
+        'USER': 'lobna',
         'PASSWORD': '6101973',
         'HOST': 'insightlearn.me',
-        'HOST': '4.227.176.131',
         'PORT': '3306',
     },
     'whole_db': {
 
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'whole_proj',
-        'USER': 'admin',
+        'USER': 'lobna',
         'PASSWORD': '6101973',
         'HOST': 'insightlearn.me',
-        'HOST': '4.227.176.131',
         'PORT': '3306',
     },
 

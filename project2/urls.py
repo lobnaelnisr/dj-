@@ -7,6 +7,8 @@ urlpatterns = [
     path('', include('api.urls')),
     path('', include('authapi.urls')),
     path('', include('fetchapi.urls')),
+    path('', include('mlintegration.urls')),
+
     
 ]
 
