@@ -12,73 +12,134 @@ from rest_framework.decorators import api_view
 
 from project2.settings import BASE_DIR
 
-# Define the path to the model
-MODEL_PATH = os.path.join(BASE_DIR, 'svm_model (1).pkl')
-
-@csrf_exempt
-@api_view(['GET'])
+MODEL_PATH = os.path.join(settings.BASE_DIR, 'svm_model (1).pkl')
 def get_predictions(request):
     try:
-        # Load the trained model from the pkl file
-        with open(MODEL_PATH, 'rb') as file:
-            model = pickle.load(file)
-
+        # Connect to the database and execute the query
         with connection.cursor() as cursor:
             cursor.execute("USE whole_proj;")
-            cursor.execute("""                    
+            cursor.execute("""
                 SELECT stu.email, sess.arousal, sess.attention, sess.valence, sess.volume, qa.timestart, qa.timefinish, qa.sumgrades
                 FROM Session sess
                 JOIN Students stu ON sess.userEmail = stu.email
                 JOIN Quiz_Attempts qa ON stu.id = qa.userid
                 JOIN Quiz q ON qa.quiz = q.id
-                WHERE qa.quiz = '19';
+                WHERE qa.quiz = '18';
             """)
             rows = cursor.fetchall()
             columns = [col[0] for col in cursor.description]
             data = pd.DataFrame(rows, columns=columns)
         
-        # Debugging: Log the columns present in the fetched data
-        print("Fetched Data Columns:", data.columns.tolist())
-
-        # Calculate 'sec' as the absolute difference between 'timefinish' and 'timestart'
+        # Preprocess the data
         data['sec'] = (data['timefinish'] - data['timestart']).abs()
 
         # Select specific columns to keep
-        columns_to_keep_from_quiz = ['sumgrades', 'sec', 'email', 'arousal', 'attention', 'valence', 'volume']
-        data = data[columns_to_keep_from_quiz]
+        columns_to_keep_from_quiz = ['sumgrades', 'sec', 'email']
+        data_quiz = data[columns_to_keep_from_quiz]
 
         # Convert 'sumgrades' and 'sec' columns to numeric, coercing errors to NaN
-        data[['sumgrades', 'sec']] = data[['sumgrades', 'sec']].apply(pd.to_numeric, errors='coerce')
+        data_quiz[['sumgrades', 'sec']] = data_quiz[['sumgrades', 'sec']].apply(pd.to_numeric, errors='coerce')
 
         # Filter out non-numeric rows in the last two columns
-        data[['sumgrades', 'sec']] = data[['sumgrades', 'sec']].applymap(lambda x: x if isinstance(x, (int, float)) else pd.NA)
+        data_quiz[['sumgrades', 'sec']] = data_quiz[['sumgrades', 'sec']].applymap(lambda x: x if isinstance(x, (int, float)) else pd.NA)
 
         # Create a new column that is the sum of the last two columns
-        data['grade_and_time'] = data[['sumgrades', 'sec']].sum(axis=1)
+        data_quiz['grade_and_time'] = data_quiz[['sumgrades', 'sec']].sum(axis=1)
 
-        # Handle missing values before further processing
-        data = data.dropna(subset=['sumgrades', 'sec', 'arousal', 'attention', 'valence', 'volume', 'grade_and_time'])
+        # Preprocess session data
+        columns_to_keep = ['email', 'arousal', 'attention', 'valence', 'volume']
+        data_sessions = data[columns_to_keep]
 
-        # Debugging: Log the columns present in the data before analysis
-        print("Data Columns before Analysis:", data.columns.tolist())
+        # Group by 'userEmail'
+        grouped = data_sessions.groupby('email')
 
-        # Analyze and process sessions
-        processed_data = analyze_and_process_sessions(data)
+        # Lists to categorize users based on normality test
+        normal_users = []
+        non_normal_users = []
 
-        # Ensure the required columns are in the processed_data
-        required_columns = ['arousal', 'attention', 'valence', 'volume', 'grade_and_time',
-                            'arousal_min', 'arousal_max', 'attention_min', 'attention_max', 
-                            'valence_min', 'valence_max', 'volume_min', 'volume_max']
-        for col in required_columns:
-            if col not in processed_data.columns:
-                return JsonResponse({"error": f"Column '{col}' not found in processed data."}, status=500)
+        # Iterate over groups and perform Shapiro-Wilk test
+        for name, group in grouped:
+            if len(group) >= 3:  # Check if there are enough data points for the test
+                shapiro_test = stats.shapiro(group['arousal'])
+                p_value = shapiro_test.pvalue
 
-        # Define the features to scale
-        features_to_scale = required_columns
-        features = processed_data[features_to_scale]
+                # Categorize as normal or non-normal
+                if p_value < 0.05:
+                    non_normal_users.append(name)
+                else:
+                    normal_users.append(name)
 
-        # Ensure there are no NA values in features before scaling
-        features = features.fillna(0)
+        # Calculate summary statistics for non-normal users
+        median_agg = pd.DataFrame()
+        if non_normal_users:
+            median_group = data_sessions[data_sessions['email'].isin(non_normal_users)]
+            median_agg = median_group.groupby('email').agg({
+                'arousal': ['min', 'max', 'median'],  # Use 'median'
+                'attention': ['min', 'max', 'median'],
+                'valence': ['min', 'max', 'median'],
+                'volume': ['min', 'max', 'median']
+            })
+            median_agg.columns = ["_".join(x) for x in median_agg.columns.ravel()]
+
+        # Calculate summary statistics for normal users
+        mean_agg = pd.DataFrame()
+        if normal_users:
+            mean_group = data_sessions[data_sessions['email'].isin(normal_users)]
+            mean_agg = mean_group.groupby('email').agg({
+                'arousal': ['min', 'max', 'mean'],  # Use 'mean'
+                'attention': ['min', 'max', 'mean'],
+                'valence': ['min', 'max', 'mean'],
+                'volume': ['min', 'max', 'mean']
+            })
+            mean_agg.columns = ["_".join(x) for x in mean_agg.columns.ravel()]
+
+        # Combine the median-based and mean-based summaries
+        combined_agg = pd.concat([median_agg, mean_agg]).reset_index()
+
+        # Consolidate columns by taking the non-null values and dropping the original columns
+        columns_pairs = [
+            ['arousal_median', 'arousal_mean'],
+            ['attention_median', 'attention_mean'],
+            ['valence_median', 'valence_mean'],
+            ['volume_median', 'volume_mean']
+        ]
+
+        for col1, col2 in columns_pairs:
+            new_col = col1.split('_')[0]  # Extract the base name for the new column
+            # Create the new column by comparing the two columns and taking the non-null value
+            combined_agg[new_col] = combined_agg[col1].combine_first(combined_agg[col2])
+            # Drop the original columns
+            combined_agg.drop(columns=[col1, col2], inplace=True)
+
+        # Merge the processed data_quiz with combined_agg on 'email' and 'email' respectively
+        combined_data = pd.merge(data_quiz, combined_agg, left_on='email', right_on='email', how='inner')
+
+        combined_data = combined_data.drop_duplicates(subset='email')
+
+        # Load the trained model from the pkl file
+        with open(MODEL_PATH, 'rb') as file:
+            model = pickle.load(file)
+
+        # Load your new data from the Excel file
+        new_data = combined_data
+
+        # Drop rows with all null values
+        new_data = new_data.dropna(axis=0, how='all')
+
+        # Drop rows with any null values
+        new_data = new_data.dropna()
+
+        # Check if there are any rows left after dropping null values
+        if new_data.shape[0] == 0:
+            return JsonResponse({"error": "No data available after dropping rows with null values."}, status=400)
+
+        # Define the features to use for prediction
+        features_to_use = ['grade_and_time', 'arousal_min', 'arousal_max', 'attention_min', 'attention_max',
+                           'valence_max', 'valence_min', 'volume_min', 'volume_max', 'arousal', 'attention',
+                           'valence', 'volume']
+
+        # Select the features
+        features = new_data[features_to_use]
 
         # Scale the features using MinMaxScaler
         scaler = MinMaxScaler()
@@ -87,104 +148,12 @@ def get_predictions(request):
         # Make predictions using the loaded model
         predictions = model.predict(scaled_features)
 
-        # Add predictions to the processed_data DataFrame
-        processed_data['predictions'] = predictions
+        # Add predictions to the original new_data DataFrame
+        new_data['predictions'] = predictions
 
-        # Convert NAType to None for JSON serialization
-        processed_data = processed_data.where(pd.notnull(processed_data), None)
-
-        # Create a list of dictionaries with proper formatting
-        result = []
-        for index, row in processed_data.iterrows():
-            result.append({
-                "email": row['email'],
-                "grade_and_time": row['grade_and_time'],
-                "arousal": row['arousal'],
-                "attention": row['attention'],
-                "valence": row['valence'],
-                "volume": row['volume'],
-                "predictions": row['predictions']
-            })
+        # Convert the DataFrame to a list of dictionaries with proper formatting
+        result = new_data.to_dict(orient='records')
 
         return JsonResponse(result, safe=False)
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
-
-def analyze_and_process_sessions(data):
-    # Ensure necessary columns are in the input data
-    required_columns = ['email', 'arousal', 'attention', 'valence', 'volume', 'grade_and_time']
-    if not all(column in data.columns for column in required_columns):
-        raise ValueError(f"Input data must contain the following columns: {required_columns}")
-
-    # Group by 'email'
-    grouped = data.groupby('email')
-
-    # Lists to categorize users based on normality test
-    normal_users = []
-    non_normal_users = []
-
-    # Iterate over groups and perform Shapiro-Wilk test
-    for name, group in grouped:
-        if len(group) >= 3:  # Check if there are enough data points for the test
-            shapiro_test = stats.shapiro(group['arousal'])
-            p_value = shapiro_test.pvalue
-
-            # Categorize as normal or non-normal
-            if p_value < 0.05:
-                non_normal_users.append(name)
-            else:
-                normal_users.append(name)
-
-    # Calculate summary statistics for non-normal users
-    median_agg = pd.DataFrame()
-    if non_normal_users:
-        median_group = data[data['email'].isin(non_normal_users)]
-        median_agg = median_group.groupby('email').agg({
-            'arousal': ['min', 'max', 'median'],  # Use 'median'
-            'attention': ['min', 'max', 'median'],
-            'valence': ['min', 'max', 'median'],
-            'volume': ['min', 'max', 'median'],
-            'grade_and_time': ['median']
-        })
-        median_agg.columns = ["_".join(x) for x in median_agg.columns.ravel()]
-
-    # Calculate summary statistics for normal users
-    mean_agg = pd.DataFrame()
-    if normal_users:
-        mean_group = data[data['email'].isin(normal_users)]
-        mean_agg = mean_group.groupby('email').agg({
-            'arousal': ['min', 'max', 'mean'],  # Use 'mean'
-            'attention': ['min', 'max', 'mean'],
-            'valence': ['min', 'max', 'mean'],
-            'volume': ['min', 'max', 'mean'],
-            'grade_and_time': ['mean']
-        })
-        mean_agg.columns = ["_".join(x) for x in mean_agg.columns.ravel()]
-
-    # Combine the median-based and mean-based summaries
-    combined_agg = pd.concat([median_agg, mean_agg]).reset_index()
-
-    # Consolidate columns by taking the non-null values and dropping the original columns
-    columns_pairs = [
-        ['arousal_median', 'arousal_mean'],
-        ['attention_median', 'attention_mean'],
-        ['valence_median', 'valence_mean'],
-        ['volume_median', 'volume_mean']
-    ]
-    
-    for col1, col2 in columns_pairs:
-        new_col = col1.split('_')[0]  # Extract the base name for the new column
-        # Create the new column by comparing the two columns and taking the non-null value
-        combined_agg[new_col] = combined_agg[col1].combine_first(combined_agg[col2])
-        # Drop the original columns
-        combined_agg.drop(columns=[col1, col2], inplace=True)
-
-    # Ensure the resulting DataFrame contains the necessary columns
-    final_columns = ['email', 'arousal', 'attention', 'valence', 'volume', 'grade_and_time',
-                     'arousal_min', 'arousal_max', 'attention_min', 'attention_max', 
-                     'valence_min', 'valence_max', 'volume_min', 'volume_max']
-    for col in final_columns:
-        if col not in combined_agg.columns:
-            combined_agg[col] = pd.NA
-    
-    return combined_agg
