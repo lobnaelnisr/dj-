@@ -24,7 +24,7 @@ def get_predictions(request):
                 JOIN Students stu ON sess.userEmail = stu.email
                 JOIN Quiz_Attempts qa ON stu.id = qa.userid
                 JOIN Quiz q ON qa.quiz = q.id
-                WHERE qa.quiz = '18';
+                WHERE qa.quiz = '18' AND sess.Session_For = 'SA-quiz';
             """)
             rows = cursor.fetchall()
             columns = [col[0] for col in cursor.description]
