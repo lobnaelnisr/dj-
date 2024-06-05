@@ -13,67 +13,71 @@ from rest_framework.decorators import api_view
 from project2.settings import BASE_DIR
 
 MODEL_PATH = os.path.join(settings.BASE_DIR, 'svm_model (1).pkl')
+@api_view(['GET'])
 def get_predictions(request):
     try:
         # Connect to the database and execute the query
         with connection.cursor() as cursor:
             cursor.execute("USE whole_proj;")
             cursor.execute("""
-                SELECT stu.email, sess.arousal, sess.attention, sess.valence, sess.volume, qa.timestart, qa.timefinish, qa.sumgrades
-                FROM Session sess
-                JOIN Students stu ON sess.userEmail = stu.email
-                JOIN Quiz_Attempts qa ON stu.id = qa.userid
-                JOIN Quiz q ON qa.quiz = q.id
-                WHERE qa.quiz = '18' AND sess.Session_For = 'SA-quiz';
+                   SELECT stu.email, sess.arousal, sess.attention, sess.valence, sess.volume, sess.Session_For, c.Course, qa.timestart, qa.timefinish, qa.sumgrades
+                   FROM Session sess
+                   JOIN Students stu ON sess.userEmail = stu.email
+                   JOIN Quiz_Attempts qa ON stu.id = qa.userid
+                   JOIN Quiz q ON qa.quiz = q.id
+                   JOIN Course c ON q.course = c.id
+                   WHERE (c.Course = 'System Analysis & Design'AND sess.Session_For = 'SA-quiz')
+                   OR (c.Course = 'Management of Technology' AND sess.Session_For = 'MOT-quiz');
             """)
+
             rows = cursor.fetchall()
             columns = [col[0] for col in cursor.description]
             data = pd.DataFrame(rows, columns=columns)
-        
+
         # Preprocess the data
         data['sec'] = (data['timefinish'] - data['timestart']).abs()
 
         # Select specific columns to keep
-        columns_to_keep_from_quiz = ['sumgrades', 'sec', 'email']
+        columns_to_keep_from_quiz = ['sumgrades', 'sec', 'email', 'Course', 'Session_For']
         data_quiz = data[columns_to_keep_from_quiz]
 
         # Convert 'sumgrades' and 'sec' columns to numeric, coercing errors to NaN
         data_quiz[['sumgrades', 'sec']] = data_quiz[['sumgrades', 'sec']].apply(pd.to_numeric, errors='coerce')
 
         # Filter out non-numeric rows in the last two columns
-        data_quiz[['sumgrades', 'sec']] = data_quiz[['sumgrades', 'sec']].applymap(lambda x: x if isinstance(x, (int, float)) else pd.NA)
+        data_quiz = data_quiz.dropna()
 
         # Create a new column that is the sum of the last two columns
         data_quiz['grade_and_time'] = data_quiz[['sumgrades', 'sec']].sum(axis=1)
 
         # Preprocess session data
-        columns_to_keep = ['email', 'arousal', 'attention', 'valence', 'volume']
+        columns_to_keep = ['email', 'arousal', 'attention', 'valence', 'volume', 'Course', 'Session_For']
         data_sessions = data[columns_to_keep]
 
-        # Group by 'userEmail'
-        grouped = data_sessions.groupby('email')
+        # Group by 'email', 'Course', and 'Session_For'
+        grouped = data_sessions.groupby(['email', 'Course', 'Session_For'])
 
         # Lists to categorize users based on normality test
         normal_users = []
         non_normal_users = []
 
         # Iterate over groups and perform Shapiro-Wilk test
-        for name, group in grouped:
+        for (email, course, session_for), group in grouped:
             if len(group) >= 3:  # Check if there are enough data points for the test
                 shapiro_test = stats.shapiro(group['arousal'])
                 p_value = shapiro_test.pvalue
 
                 # Categorize as normal or non-normal
                 if p_value < 0.05:
-                    non_normal_users.append(name)
+                    non_normal_users.append((email, course, session_for))
                 else:
-                    normal_users.append(name)
+                    normal_users.append((email, course, session_for))
 
         # Calculate summary statistics for non-normal users
         median_agg = pd.DataFrame()
         if non_normal_users:
-            median_group = data_sessions[data_sessions['email'].isin(non_normal_users)]
-            median_agg = median_group.groupby('email').agg({
+            median_group = data_sessions[data_sessions[['email', 'Course', 'Session_For']].apply(tuple, axis=1).isin(non_normal_users)]
+            median_agg = median_group.groupby(['email', 'Course', 'Session_For']).agg({
                 'arousal': ['min', 'max', 'median'],  # Use 'median'
                 'attention': ['min', 'max', 'median'],
                 'valence': ['min', 'max', 'median'],
@@ -84,8 +88,8 @@ def get_predictions(request):
         # Calculate summary statistics for normal users
         mean_agg = pd.DataFrame()
         if normal_users:
-            mean_group = data_sessions[data_sessions['email'].isin(normal_users)]
-            mean_agg = mean_group.groupby('email').agg({
+            mean_group = data_sessions[data_sessions[['email', 'Course', 'Session_For']].apply(tuple, axis=1).isin(normal_users)]
+            mean_agg = mean_group.groupby(['email', 'Course', 'Session_For']).agg({
                 'arousal': ['min', 'max', 'mean'],  # Use 'mean'
                 'attention': ['min', 'max', 'mean'],
                 'valence': ['min', 'max', 'mean'],
@@ -111,27 +115,14 @@ def get_predictions(request):
             # Drop the original columns
             combined_agg.drop(columns=[col1, col2], inplace=True)
 
-        # Merge the processed data_quiz with combined_agg on 'email' and 'email' respectively
-        combined_data = pd.merge(data_quiz, combined_agg, left_on='email', right_on='email', how='inner')
+        # Merge the processed data_quiz with combined_agg on 'email', 'Course', and 'Session_For'
+        combined_data = pd.merge(data_quiz, combined_agg, on=['email', 'Course', 'Session_For'], how='inner')
 
-        combined_data = combined_data.drop_duplicates(subset='email')
+        combined_data = combined_data.drop_duplicates(subset=['email', 'Course', 'Session_For'])
 
         # Load the trained model from the pkl file
         with open(MODEL_PATH, 'rb') as file:
             model = pickle.load(file)
-
-        # Load your new data from the Excel file
-        new_data = combined_data
-
-        # Drop rows with all null values
-        new_data = new_data.dropna(axis=0, how='all')
-
-        # Drop rows with any null values
-        new_data = new_data.dropna()
-
-        # Check if there are any rows left after dropping null values
-        if new_data.shape[0] == 0:
-            return JsonResponse({"error": "No data available after dropping rows with null values."}, status=400)
 
         # Define the features to use for prediction
         features_to_use = ['grade_and_time', 'arousal_min', 'arousal_max', 'attention_min', 'attention_max',
@@ -139,7 +130,7 @@ def get_predictions(request):
                            'valence', 'volume']
 
         # Select the features
-        features = new_data[features_to_use]
+        features = combined_data[features_to_use]
 
         # Scale the features using MinMaxScaler
         scaler = MinMaxScaler()
@@ -148,11 +139,11 @@ def get_predictions(request):
         # Make predictions using the loaded model
         predictions = model.predict(scaled_features)
 
-        # Add predictions to the original new_data DataFrame
-        new_data['predictions'] = predictions
+        # Add predictions to the original combined_data DataFrame
+        combined_data['predictions'] = predictions
 
         # Convert the DataFrame to a list of dictionaries with proper formatting
-        result = new_data.to_dict(orient='records')
+        result = combined_data.to_dict(orient='records')
 
         return JsonResponse(result, safe=False)
     except Exception as e:
