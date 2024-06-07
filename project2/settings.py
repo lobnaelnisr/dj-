@@ -14,16 +14,15 @@ DEBUG = os.environ.get("DEBUG", "False").lower() == "True"
 
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "*").split(" ")
 
-# Path to the model and scaler files
-#MODEL_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'svm_model(1).pkl')
-#DATA_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'fffffffffffffffff_test.xlsx')
+
 
 # settings.py
 import os
 
 # Path to the model and scaler files
-MODEL_PATH = os.path.join(BASE_DIR, 'svm_model (1).pkl')
-#DATA_PATH = os.path.join(BASE_DIR, 'fffffffffffffffff_test.xlsx')
+MODEL_PATH1 = os.path.join(BASE_DIR, 'svm_model (1).pkl')
+MODEL_PATH2 = os.path.join(BASE_DIR, 'trained_model.pkl')
+
 
 # Application definition
 INSTALLED_APPS = [

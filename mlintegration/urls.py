@@ -3,6 +3,7 @@ from . import views
 
 urlpatterns = [
 #path('fetchpredrequirements', views.fetch_prediction_requirements ,name='fetchpredrequirements'),    
-path('prediction', views.get_predictions ,name='prediction'),
+path('successprediction', views.get_predictions ,name='successprediction'),
+path('gradeprediction', views.get_predictionsforgrades ,name='gradeprediction'),
 
 ]
