@@ -21,7 +21,7 @@ import os
 
 # Path to the model and scaler files
 MODEL_PATH1 = os.path.join(BASE_DIR, 'svm_model (1).pkl')
-MODEL_PATH2 = os.path.join(BASE_DIR, 'trained_model.pkl')
+MODEL_PATH = os.path.join(BASE_DIR, 'trained_model.pkl')
 
 
 # Application definition
