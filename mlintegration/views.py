@@ -6,7 +6,6 @@ import scipy.stats as stats
 import os
 from django.conf import settings
 from django.db import connection
-from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
 import sklearn
 from sklearn.svm import SVC
@@ -119,10 +118,6 @@ def get_predictions(request):
         # Merge the processed data_quiz with combined_agg on 'email', 'Course', and 'Session_For'
         combined_data = pd.merge(data_quiz, combined_agg, on=['email', 'Course', 'Session_For'], how='inner')
 
-        # Print values of all columns for the specified email
-        specific_record =   combined_data[  combined_data['email'] == '30202013877@alexu.edu.eg']
-        print(specific_record.to_dict(orient='records'))
-
         combined_data = combined_data.drop_duplicates(subset=['email', 'Course', 'Session_For'], keep='last')
 
         # Define the features to use for prediction
@@ -154,7 +149,20 @@ def get_predictions(request):
         predictions = model.predict(scaled_features)
 
         # Add predictions to the original combined_data DataFrame
-        combined_data['predictions'] = predictions
+        combined_data['Success_Prediction'] = predictions
+
+        # Insert predictions into the database
+
+        with connection.cursor() as cursor:
+            for _, row in combined_data.iterrows():
+                cursor.execute("""
+                    INSERT INTO Academic_Performance (Email, Course, Session_for, Grades, Success_Prediction)
+                    VALUES (%s, %s, %s, %s, %s)
+                    ON DUPLICATE KEY UPDATE Success_Prediction = VALUES(Success_Prediction);
+                """, (row['email'], row['Course'], row['Session_For'], row['sumgrades'], row['Success_Prediction']))
+        
+        # Commit the changes to the database
+        connection.commit()
 
 
         # Convert the DataFrame to a list of dictionaries with proper formatting
@@ -305,10 +313,23 @@ def get_predictionsforgrades(request=None):
         pca_features = pca.transform(scaled_features)
 
         # Make predictions using the loaded model
-        predictions = model.predict(pca_features)
+        gradepredictions = model.predict(pca_features)
 
         # Add predictions to the original combined_data DataFrame
-        combined_data['predictions'] = predictions
+        combined_data['Grade_Prediction'] = gradepredictions
+
+        # Insert predictions into the database
+        with connection.cursor() as cursor:
+            for _, row in combined_data.iterrows():
+                cursor.execute("""
+                    INSERT INTO Academic_Performance (Email, Course, Session_For, Grades, Grade_Prediction)
+                    VALUES (%s, %s, %s, %s, %s)
+                    ON DUPLICATE KEY UPDATE Grade_Prediction = VALUES(Grade_Prediction);
+                """, (row['email'], row['Course'], row['Session_For'],row['sumgrades'], row['Grade_Prediction']))
+
+        # Commit the changes to the database
+        connection.commit()
+
 
         # Convert the DataFrame to a list of dictionaries with proper formatting
         result = combined_data.to_dict(orient='records')
