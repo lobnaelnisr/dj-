@@ -8,15 +8,11 @@ from django.conf import settings
 from django.db import connection
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
-from sklearn.svm import SVC  # Assuming SVM is used
-from sklearn.impute import SimpleImputer
 import sklearn
-
-# Define the pipeline for preprocessing data
-from sklearn.pipeline import Pipeline
+from sklearn.svm import SVC
 from project2.settings import BASE_DIR
 
-MODEL_PATH1 = os.path.join(settings.BASE_DIR, 'svm_model (1).pkl')
+MODEL_PATH1 = os.path.join(BASE_DIR, 'svm_model (1).pkl')
 
 @api_view(['GET'])
 def get_predictions(request):
@@ -31,20 +27,13 @@ def get_predictions(request):
                    JOIN Quiz_Attempts qa ON stu.id = qa.userid
                    JOIN Quiz q ON qa.quiz = q.id
                    JOIN Course c ON q.course = c.id
-                   WHERE (c.Course = 'System Analysis & Design'AND sess.Session_For = 'SA-quiz')
+                   WHERE (c.Course = 'System Analysis & Design' AND sess.Session_For = 'SA-quiz')
                    OR (c.Course = 'Management of Technology' AND sess.Session_For = 'MOT-quiz');
             """)
 
             rows = cursor.fetchall()
             columns = [col[0] for col in cursor.description]
             data = pd.DataFrame(rows, columns=columns)
-
-        # Print values of all columns for the specified email
-        specific_record = data[data['email'] == '30202013877@alexu.edu.eg']
-        print("Specific record before processing:", specific_record.to_dict(orient='records'))
-
-        # Sort the data by quiz timestamp in descending order
-        data.sort_values(by=['timefinish'], ascending=False, inplace=True)
 
         # Preprocess the data
         data['sec'] = (data['timefinish'] - data['timestart']).abs()
@@ -54,7 +43,7 @@ def get_predictions(request):
         data_quiz = data[columns_to_keep_from_quiz]
 
         # Convert 'sumgrades' and 'sec' columns to numeric, coercing errors to NaN
-        data_quiz.loc[:, ['sumgrades', 'sec']] = data_quiz[['sumgrades', 'sec']].apply(pd.to_numeric, errors='coerce')
+        data_quiz[['sumgrades', 'sec']] = data_quiz[['sumgrades', 'sec']].apply(pd.to_numeric, errors='coerce')
 
         # Filter out non-numeric rows in the last two columns
         data_quiz = data_quiz.dropna()
@@ -128,13 +117,13 @@ def get_predictions(request):
             combined_agg.drop(columns=[col1, col2], inplace=True)
 
         # Merge the processed data_quiz with combined_agg on 'email', 'Course', and 'Session_For'
-        combined_data = pd.merge(data_quiz, combined_agg, on=['email', 'Course', 'Session_For'], how='left')
+        combined_data = pd.merge(data_quiz, combined_agg, on=['email', 'Course', 'Session_For'], how='inner')
 
-        # Fill missing values in 'sumgrades' with the corresponding values from the new quiz data
-        combined_data['sumgrades'] = combined_data['sumgrades'].fillna(combined_data['sumgrades'])
+        # Print values of all columns for the specified email
+        specific_record =   combined_data[  combined_data['email'] == '30202013877@alexu.edu.eg']
+        print(specific_record.to_dict(orient='records'))
 
-        # Drop duplicates
-        combined_data = combined_data.drop_duplicates(subset=['email', 'Course', 'Session_For'])
+        combined_data = combined_data.drop_duplicates(subset=['email', 'Course', 'Session_For'], keep='last')
 
         # Define the features to use for prediction
         features_to_use = ['grade_and_time', 'arousal_min', 'arousal_max', 'attention_min', 'attention_max',
@@ -144,15 +133,9 @@ def get_predictions(request):
         # Select the features
         features = combined_data[features_to_use]
 
-        
-        # Define the pipeline
-        pipeline = Pipeline([
-            ('imputer', SimpleImputer(strategy='mean')),  # Impute missing values with mean
-            ('scaler', MinMaxScaler()),  # Scale features
-        ])
-
-        # Preprocess the features using the pipeline
-        scaled_features = pipeline.fit_transform(features)
+        # Scale the features using MinMaxScaler
+        scaler = MinMaxScaler()
+        scaled_features = scaler.fit_transform(features)
 
         # Load the trained model from the pkl file
         if os.path.exists(MODEL_PATH1):
@@ -160,21 +143,19 @@ def get_predictions(request):
                 model = pickle.load(file)
         else:
             model = SVC()  # Assuming SVC model, change accordingly
-            # Here you should fit your model with your training data. 
+            # Here you should fit your model with your training data.
             # This example assumes a 'target_column' exists. Adjust according to your use case.
             model.fit(scaled_features, combined_data['target_column'])  # Replace 'target_column' with the actual target column name
             with open(MODEL_PATH1, 'wb') as file:
                 pickle.dump(model, file)
 
+        
         # Make predictions using the loaded model
         predictions = model.predict(scaled_features)
 
         # Add predictions to the original combined_data DataFrame
         combined_data['predictions'] = predictions
 
-        # Print the predictions for the specified email
-        specific_predictions = combined_data[combined_data['email'] == '30202013877@alexu.edu.eg']
-        print("Predictions for specific record:", specific_predictions[['email', 'sumgrades', 'predictions']].to_dict(orient='records'))
 
         # Convert the DataFrame to a list of dictionaries with proper formatting
         result = combined_data.to_dict(orient='records')
@@ -183,12 +164,8 @@ def get_predictions(request):
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
 
+MODEL_PATH2 = os.path.join(settings.BASE_DIR, 'trained_model.pkl')
 
-
-# Define the path to the trained model
-MODEL_PATH = os.path.join(settings.BASE_DIR, 'trained_model.pkl')
-
-# Function to get predictions for grades
 def get_predictionsforgrades(request=None):
     try:
         # Connect to the database and execute the query
@@ -202,19 +179,13 @@ def get_predictionsforgrades(request=None):
                 JOIN Quiz q ON qa.quiz = q.id
                 JOIN Course c ON q.course = c.id
                 WHERE (c.Course = 'System Analysis & Design' AND sess.Session_For = 'SA-quiz')
+                OR (c.Course = 'System Analysis & Design' AND sess.Session_For = 'SA-quiz-2')           
                 OR (c.Course = 'Management of Technology' AND sess.Session_For = 'MOT-quiz');
             """)
 
             rows = cursor.fetchall()
             columns = [col[0] for col in cursor.description]
             data = pd.DataFrame(rows, columns=columns)
-
-        # Print values of all columns for the specified email
-        specific_record = data[data['email'] == '30202013877@alexu.edu.eg']
-        print("Specific record before processing:", specific_record.to_dict(orient='records'))
-
-        # Sort the data by quiz timestamp in descending order
-        data.sort_values(by=['timefinish'], ascending=False, inplace=True)
 
         # Preprocess the data
         data['sec'] = (data['timefinish'] - data['timestart']).abs()
@@ -224,7 +195,7 @@ def get_predictionsforgrades(request=None):
         data_quiz = data[columns_to_keep_from_quiz]
 
         # Convert 'sumgrades' and 'sec' columns to numeric, coercing errors to NaN
-        data_quiz.loc[:, ['sumgrades', 'sec']] = data_quiz[['sumgrades', 'sec']].apply(pd.to_numeric, errors='coerce')
+        data_quiz[['sumgrades', 'sec']] = data_quiz[['sumgrades', 'sec']].apply(pd.to_numeric, errors='coerce')
 
         # Filter out non-numeric rows in the last two columns
         data_quiz = data_quiz.dropna()
@@ -297,16 +268,24 @@ def get_predictionsforgrades(request=None):
             # Drop the original columns
             combined_agg.drop(columns=[col1, col2], inplace=True)
 
-        # Merge the processed data_quiz with combined_agg on 'email', 'Course', and 'Session_For'
-        combined_data = pd.merge(data_quiz, combined_agg, on=['email', 'Course', 'Session_For'], how='left')
+        # Merge the processed data_quiz with combined_agg on 'email', 'Course', 'Session_For'
+        combined_data = pd.merge(data_quiz, combined_agg, on=['email', 'Course', 'Session_For'], how='inner')
 
-        # Fill missing values in 'sumgrades' with the corresponding values from the new quiz data
-        combined_data['sumgrades'] = combined_data['sumgrades'].fillna(combined_data['sumgrades'])
-        # Fill missing values in 'sumgrades' with the corresponding values from the new quiz data
-        combined_data['sumgrades'] = combined_data['sumgrades'].fillna(combined_data['sumgrades'])
+        combined_data = combined_data.drop_duplicates(subset=['email', 'Course', 'Session_For'], keep='last')
 
-        # Drop duplicates
-        combined_data = combined_data.drop_duplicates(subset=['email', 'Course', 'Session_For'])
+        # Load the trained model, scaler, imputer, and PCA components from the pkl file
+        with open(MODEL_PATH2, 'rb') as file:
+            model_data = pickle.load(file)
+            model = model_data['model']
+            scaler = model_data['scaler']
+            imputer = model_data['imputer']
+            pca = model_data['pca']
+            trained_sklearn_version = model_data.get('sklearn_version', 'unknown')
+
+        # Check sklearn version compatibility
+        current_sklearn_version = sklearn.__version__
+        if current_sklearn_version != trained_sklearn_version:
+            raise ImportError(f"Trained model uses scikit-learn version {trained_sklearn_version}, but current version is {current_sklearn_version}")
 
         # Define the features to use for prediction
         features_to_use = ['grade_and_time', 'arousal_min', 'arousal_max', 'attention_min', 'attention_max',
@@ -316,36 +295,11 @@ def get_predictionsforgrades(request=None):
         # Select the features
         features = combined_data[features_to_use]
 
-        # Define the pipeline
-        pipeline = Pipeline([
-            ('imputer', SimpleImputer(strategy='mean')),  # Impute missing values with mean
-            ('scaler', MinMaxScaler()),  # Scale features
-        ])
+        # Handle missing values in features
+        features_imputed = imputer.transform(features)
 
-        # Preprocess the features using the pipeline
-        scaled_features = pipeline.fit_transform(features)
-
-        # Load the trained model from the pkl file
-        if os.path.exists(MODEL_PATH):
-            with open(MODEL_PATH, 'rb') as file:
-                model_data = pickle.load(file)
-                model = model_data['model']
-                scaler = model_data['scaler']
-                imputer = model_data['imputer']
-                pca = model_data['pca']
-                trained_sklearn_version = model_data.get('sklearn_version', 'unknown')
-
-            # Check sklearn version compatibility
-            current_sklearn_version = sklearn.__version__
-            if current_sklearn_version != trained_sklearn_version:
-                raise ImportError(f"Trained model uses scikit-learn version {trained_sklearn_version}, but current version is {current_sklearn_version}")
-        else:
-            # Train a new model if the file doesn't exist
-            model = SVC()  # Example SVM model, replace with your model
-            model.fit(scaled_features, combined_data['target_column'])  # Assuming 'target_column' exists
-            # Save the trained model
-            with open(MODEL_PATH, 'wb') as file:
-                pickle.dump(model, file)
+        # Scale the features
+        scaled_features = scaler.transform(features_imputed)
 
         # Apply PCA
         pca_features = pca.transform(scaled_features)
@@ -355,10 +309,6 @@ def get_predictionsforgrades(request=None):
 
         # Add predictions to the original combined_data DataFrame
         combined_data['predictions'] = predictions
-
-        # Print the predictions for the specified email
-        specific_predictions = combined_data[combined_data['email'] == '30202013877@alexu.edu.eg']
-        print("Predictions for specific record:", specific_predictions[['email', 'sumgrades', 'predictions']].to_dict(orient='records'))
 
         # Convert the DataFrame to a list of dictionaries with proper formatting
         result = combined_data.to_dict(orient='records')
@@ -370,7 +320,7 @@ def get_predictionsforgrades(request=None):
         # Print the result if called by the scheduler
         print("The Scheduler has fetched the predictions")
         return result
-    
+
     except Exception as e:
         error_message = {"error": str(e)}
         # If the function is called by a request, return JsonResponse with the error
@@ -380,3 +330,8 @@ def get_predictionsforgrades(request=None):
         # Print the error if called by the scheduler
         print("Error:", error_message)
         return error_message
+
+# Create a Django view to handle requests for predictions
+@api_view(['GET'])
+def get_predictions_view(request):
+    return get_predictionsforgrades(request)
