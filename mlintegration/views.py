@@ -6,6 +6,7 @@ import scipy.stats as stats
 import os
 from django.conf import settings
 from django.db import connection
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
 from sklearn.svm import SVC  # Assuming SVM is used
 from sklearn.impute import SimpleImputer
@@ -38,6 +39,9 @@ def get_predictions(request):
             columns = [col[0] for col in cursor.description]
             data = pd.DataFrame(rows, columns=columns)
 
+        # Print values of all columns for the specified email
+        specific_record = data[data['email'] == '30202013877@alexu.edu.eg']
+        print("Specific record before processing:", specific_record.to_dict(orient='records'))
 
         # Sort the data by quiz timestamp in descending order
         data.sort_values(by=['timefinish'], ascending=False, inplace=True)
@@ -166,21 +170,11 @@ def get_predictions(request):
         predictions = model.predict(scaled_features)
 
         # Add predictions to the original combined_data DataFrame
-        combined_data['Success_Prediction'] = predictions
+        combined_data['predictions'] = predictions
 
-        # Insert predictions into the database
-
-        with connection.cursor() as cursor:
-            for _, row in combined_data.iterrows():
-                cursor.execute("""
-                    INSERT INTO Academic_Performance (Email, Course, Session_for, Grades, Success_Prediction)
-                    VALUES (%s, %s, %s, %s, %s)
-                    ON DUPLICATE KEY UPDATE Success_Prediction = VALUES(Success_Prediction);
-                """, (row['email'], row['Course'], row['Session_For'], row['sumgrades'], row['Success_Prediction']))
-        
-        # Commit the changes to the database
-        connection.commit()
-
+        # Print the predictions for the specified email
+        specific_predictions = combined_data[combined_data['email'] == '30202013877@alexu.edu.eg']
+        print("Predictions for specific record:", specific_predictions[['email', 'sumgrades', 'predictions']].to_dict(orient='records'))
 
         # Convert the DataFrame to a list of dictionaries with proper formatting
         result = combined_data.to_dict(orient='records')
@@ -192,7 +186,7 @@ def get_predictions(request):
 
 
 # Define the path to the trained model
-MODEL_PATH2 = os.path.join(settings.BASE_DIR, 'trained_model.pkl')
+MODEL_PATH = os.path.join(settings.BASE_DIR, 'trained_model.pkl')
 
 # Function to get predictions for grades
 def get_predictionsforgrades(request=None):
@@ -215,6 +209,9 @@ def get_predictionsforgrades(request=None):
             columns = [col[0] for col in cursor.description]
             data = pd.DataFrame(rows, columns=columns)
 
+        # Print values of all columns for the specified email
+        specific_record = data[data['email'] == '30202013877@alexu.edu.eg']
+        print("Specific record before processing:", specific_record.to_dict(orient='records'))
 
         # Sort the data by quiz timestamp in descending order
         data.sort_values(by=['timefinish'], ascending=False, inplace=True)
@@ -305,6 +302,8 @@ def get_predictionsforgrades(request=None):
 
         # Fill missing values in 'sumgrades' with the corresponding values from the new quiz data
         combined_data['sumgrades'] = combined_data['sumgrades'].fillna(combined_data['sumgrades'])
+        # Fill missing values in 'sumgrades' with the corresponding values from the new quiz data
+        combined_data['sumgrades'] = combined_data['sumgrades'].fillna(combined_data['sumgrades'])
 
         # Drop duplicates
         combined_data = combined_data.drop_duplicates(subset=['email', 'Course', 'Session_For'])
@@ -327,10 +326,12 @@ def get_predictionsforgrades(request=None):
         scaled_features = pipeline.fit_transform(features)
 
         # Load the trained model from the pkl file
-        if os.path.exists(MODEL_PATH2):
-            with open(MODEL_PATH2, 'rb') as file:
+        if os.path.exists(MODEL_PATH):
+            with open(MODEL_PATH, 'rb') as file:
                 model_data = pickle.load(file)
                 model = model_data['model']
+                scaler = model_data['scaler']
+                imputer = model_data['imputer']
                 pca = model_data['pca']
                 trained_sklearn_version = model_data.get('sklearn_version', 'unknown')
 
@@ -343,30 +344,21 @@ def get_predictionsforgrades(request=None):
             model = SVC()  # Example SVM model, replace with your model
             model.fit(scaled_features, combined_data['target_column'])  # Assuming 'target_column' exists
             # Save the trained model
-            with open(MODEL_PATH2, 'wb') as file:
+            with open(MODEL_PATH, 'wb') as file:
                 pickle.dump(model, file)
 
         # Apply PCA
         pca_features = pca.transform(scaled_features)
 
         # Make predictions using the loaded model
-        gradepredictions = model.predict(pca_features)
+        predictions = model.predict(pca_features)
 
         # Add predictions to the original combined_data DataFrame
-        combined_data['Grade_Prediction'] = gradepredictions
+        combined_data['predictions'] = predictions
 
-        # Insert predictions into the database
-        with connection.cursor() as cursor:
-            for _, row in combined_data.iterrows():
-                cursor.execute("""
-                    INSERT INTO Academic_Performance (Email, Course, Session_For, Grades, Grade_Prediction)
-                    VALUES (%s, %s, %s, %s, %s)
-                    ON DUPLICATE KEY UPDATE Grade_Prediction = VALUES(Grade_Prediction);
-                """, (row['email'], row['Course'], row['Session_For'], row['sumgrades'], row['Grade_Prediction']))
-
-        # Commit the changes to the database
-        connection.commit()
-
+        # Print the predictions for the specified email
+        specific_predictions = combined_data[combined_data['email'] == '30202013877@alexu.edu.eg']
+        print("Predictions for specific record:", specific_predictions[['email', 'sumgrades', 'predictions']].to_dict(orient='records'))
 
         # Convert the DataFrame to a list of dictionaries with proper formatting
         result = combined_data.to_dict(orient='records')
